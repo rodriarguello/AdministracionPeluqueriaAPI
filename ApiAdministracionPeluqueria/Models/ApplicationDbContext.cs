@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ApiAdministracionPeluqueria.Models.Entidades;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApiAdministracionPeluqueria.Models
 {
@@ -8,7 +9,8 @@ namespace ApiAdministracionPeluqueria.Models
         {
         }
 
-
+       
+        
 
     }
 }
