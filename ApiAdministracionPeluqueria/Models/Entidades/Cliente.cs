@@ -6,17 +6,19 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
     {
         [Required]
         [Key]
-        public int id { get; set; }
+        public int Id { get; set; }
 
         [Required]
-        public string nombre { get; set; }
+        public string Nombre { get; set; }
 
-        public string telefono { get; set; }
+        public string Telefono { get; set; }
 
-        public string mail { get; set; }
+        public string Mail { get; set; }
 
         [Required]
-        public int idMascota { get; set; }
+        public int IdMascota { get; set; }
+
+        public List<Mascota> Mascota { get; set; }
 
     }
 }

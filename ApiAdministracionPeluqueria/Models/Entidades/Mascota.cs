@@ -6,23 +6,31 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
     {
         [Required]
         [Key]
-        public int id { get; set; }
+        public int Id { get; set; }
 
         [Required]
-        public string nombre { get; set;}
+        public string Nombre { get; set;}
 
         [Required]
-        public DateTime fechaNacimiento { get; set;}
+        public DateTime FechaNacimiento { get; set;}
 
         [Required]
-        public int idRaza { get; set;}
+        public int IdRaza { get; set;}
+
+        public Raza Raza { get; set;}
 
         [Required]
-        public int idEnfermedad { get; set;}
+        public int IdEnfermedad { get; set;}
+
+        public List<Enfermedad> Enfermedad { get; set;}
 
         [Required]
-        public int idAlergia { get; set;}
+        public int IdAlergia { get; set;}
 
-        public  int idTurno { get; set;}
+        public List<Alergia> Alergia { get; set;}
+
+        public  int IdTurno { get; set;}
+
+        
     }
 }
