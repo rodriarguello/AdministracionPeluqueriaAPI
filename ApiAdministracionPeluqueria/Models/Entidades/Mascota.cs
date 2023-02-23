@@ -29,9 +29,9 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
 
         public List<Alergia> Alergia { get; set;}
 
-        public  int IdTurno { get; set;}
+        public  int? IdTurno { get; set;}
 
-        public List<Turno> Turno { get; set;}
+        public List<Turno>? Turno { get; set;}
 
         
     }
