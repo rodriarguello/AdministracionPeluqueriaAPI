@@ -85,3 +85,5 @@ D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiA
 D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\obj\Debug\net6.0\ApiAdministracionPeluqueria.pdb
 D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\obj\Debug\net6.0\ApiAdministracionPeluqueria.genruntimeconfig.cache
 D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\obj\Debug\net6.0\ref\ApiAdministracionPeluqueria.dll
+D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\AutoMapper.dll
+D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
