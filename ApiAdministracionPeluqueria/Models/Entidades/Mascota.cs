@@ -15,6 +15,11 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         public DateTime FechaNacimiento { get; set;}
 
         [Required]
+        public int IdCliente { get; set;}
+
+        public Cliente Cliente { get; set;}
+
+        [Required]
         public int IdRaza { get; set;}
 
         public Raza Raza { get; set;}
