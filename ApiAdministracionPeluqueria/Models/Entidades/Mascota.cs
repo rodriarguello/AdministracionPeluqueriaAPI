@@ -31,6 +31,8 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
 
         public  int IdTurno { get; set;}
 
+        public Turno Turno { get; set;}
+
         
     }
 }
