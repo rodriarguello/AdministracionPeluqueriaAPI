@@ -35,7 +35,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<ClienteDTO>> GetCliente(int id)
+        public async Task<ActionResult<ClienteDTO>> GetCliente([FromRoute]int id)
         {
             var cliente = await context.Clientes.FirstOrDefaultAsync(x=> x.Id == id);
 
@@ -48,10 +48,8 @@ namespace ApiAdministracionPeluqueria.Controllers
         }
 
 
-
-
         [HttpPost]
-        public async Task<ActionResult> PostClientes(ClienteCreacionDTO nuevoClienteDTO)
+        public async Task<ActionResult<ClienteDTO>> PostCliente([FromBody]ClienteCreacionDTO nuevoClienteDTO)
         {
 
             var nuevoCliente = mapper.Map<Cliente>(nuevoClienteDTO);
@@ -60,8 +58,43 @@ namespace ApiAdministracionPeluqueria.Controllers
            await context.SaveChangesAsync();
 
 
+            return mapper.Map<ClienteDTO>(nuevoCliente);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> PutCliente([FromBody]ClienteDTO clienteDTO)
+        {
+
+            bool existe = await context.Clientes.AnyAsync(cliente => cliente.Id == clienteDTO.Id);
+
+            if (!existe) return NotFound();
+            
+            var cliente = mapper.Map<Cliente>(clienteDTO);
+            context.Update(cliente);
+            await context.SaveChangesAsync();
+
             return NoContent();
         }
+
+
+
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> DeleteCliente([FromRoute] int id)
+        {
+
+            bool existe = await context.Clientes.AnyAsync(cliente => cliente.Id == id);
+
+            if (!existe) return NotFound();
+
+            var cliente = await context.Clientes.FirstOrDefaultAsync(cliente => cliente.Id == id);
+
+            context.Remove(cliente);
+            await context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+
 
 
     }
