@@ -8,8 +8,9 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO
 
         [Required]
         public string Nombre { get; set; }
-
-        public string? Telefono { get; set; }
+        [Required]
+        [Phone]
+        public string Telefono { get; set; }
 
         public string? Mail { get; set; }
 

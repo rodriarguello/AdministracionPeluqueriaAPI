@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ApiAdministracionPeluqueria.Models.Entidades;
+using System.ComponentModel.DataAnnotations;
 
-namespace ApiAdministracionPeluqueria.Models.Entidades
+namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO
 {
-    public class Cliente
+    public class ClienteDTO
     {
         [Required]
         [Key]
@@ -14,14 +15,14 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         [Required]
         public string Telefono { get; set; }
 
-        
+
         public string? Mail { get; set; }
 
-        
+
         public int? IdMascota { get; set; }
 
-        
         public List<Mascota> Mascota { get; set; }
+
 
     }
 }
