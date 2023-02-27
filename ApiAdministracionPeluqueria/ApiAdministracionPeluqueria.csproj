@@ -20,7 +20,6 @@
   <ItemGroup>
     <Folder Include="Models\EntidadesDTO\MascotaDTO\" />
     <Folder Include="Models\EntidadesDTO\EnfermedadDTO\" />
-    <Folder Include="Models\EntidadesDTO\AlergiaDTO\" />
     <Folder Include="Models\EntidadesDTO\RazaDTO\" />
     <Folder Include="Models\EntidadesDTO\TurnoDTO\" />
   </ItemGroup>

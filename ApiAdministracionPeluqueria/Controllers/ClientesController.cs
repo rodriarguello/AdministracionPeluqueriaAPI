@@ -16,12 +16,18 @@ namespace ApiAdministracionPeluqueria.Controllers
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
 
+
+        #region Constructor
         public ClientesController(ApplicationDbContext context, IMapper mapper)
         {
             this.context = context;
             this.mapper = mapper;
         }
+        #endregion
 
+
+
+        #region Metodos GET
 
         [HttpGet]
         public async Task<ActionResult<List<ClienteDTO>>> GetClientes()
@@ -48,6 +54,12 @@ namespace ApiAdministracionPeluqueria.Controllers
         }
 
 
+        #endregion
+
+
+
+        #region Metodos POST
+
         [HttpPost]
         public async Task<ActionResult<ClienteDTO>> PostCliente([FromBody]ClienteCreacionDTO nuevoClienteDTO)
         {
@@ -60,6 +72,12 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             return mapper.Map<ClienteDTO>(nuevoCliente);
         }
+
+        #endregion
+
+
+
+        #region Metodos PUT
 
         [HttpPut]
         public async Task<ActionResult> PutCliente([FromBody]ClienteDTO clienteDTO)
@@ -76,7 +94,11 @@ namespace ApiAdministracionPeluqueria.Controllers
             return NoContent();
         }
 
+        #endregion
 
+
+
+        #region Metodos DELETE
 
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> DeleteCliente([FromRoute] int id)
@@ -94,7 +116,7 @@ namespace ApiAdministracionPeluqueria.Controllers
             return Ok();
         }
 
-
+        #endregion
 
 
     }
