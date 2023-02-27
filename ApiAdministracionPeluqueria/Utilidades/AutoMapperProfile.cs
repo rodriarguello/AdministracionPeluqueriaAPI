@@ -2,6 +2,7 @@
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.RazaDTO;
 using AutoMapper;
 
 namespace ApiAdministracionPeluqueria.Utilidades
@@ -31,6 +32,16 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
             CreateMap<EnfermedadCreacionDTO, Enfermedad>();
             CreateMap<EnfermedadDTO, Enfermedad>().ReverseMap();
+
+            #endregion
+
+
+
+            #region RAZAS
+
+
+            CreateMap<RazaCreacionDTO, Raza>();
+            CreateMap<RazaDTO, Raza>().ReverseMap();
 
             #endregion
 
