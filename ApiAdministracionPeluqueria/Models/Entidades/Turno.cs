@@ -40,5 +40,8 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
 
         public bool? Asistio { get; set; }
 
+        public int? Precio { get; set; }
+
+
     }
 }
