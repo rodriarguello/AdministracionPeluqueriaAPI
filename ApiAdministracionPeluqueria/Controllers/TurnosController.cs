@@ -1,4 +1,5 @@
 ﻿using ApiAdministracionPeluqueria.Models;
+using ApiAdministracionPeluqueria.Models.Entidades;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -41,13 +42,23 @@ namespace ApiAdministracionPeluqueria.Controllers
         #endregion
 
 
-        #region METODOS POST
-
-        #endregion
-
-
 
         #region METODOS PUT
+        [HttpPut]
+        public async Task<ActionResult> PutTurno([FromBody]TurnoModificarDTO turnoDTO)
+        {
+
+            bool existe = await context.Turnos.AnyAsync(turno => turno.Id == turnoDTO.Id);
+
+            if(!existe) return NotFound();
+
+            var turno = mapper.Map<Turno>(turnoDTO);
+
+            context.Update(turno);
+            await context.SaveChangesAsync();
+
+            return NoContent();
+        }
 
         #endregion
 
