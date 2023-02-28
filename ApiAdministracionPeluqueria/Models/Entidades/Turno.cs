@@ -4,7 +4,18 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
 {
     public class Turno
     {
+        public Turno()
+        {
 
+        }
+
+        public Turno (int idFecha, int idHorario, bool disponible, bool asistio)
+        {
+            IdFecha = idFecha;
+            IdHorario = idHorario;
+            Disponible = disponible;
+            Asistio = asistio;
+        }
 
         [Key]
         [Required]
