@@ -23,12 +23,12 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         [Required]
         public int IdFecha { get; set; }
 
-        public Fecha Fecha { get; set; }
+        public Fecha? Fecha { get; set; }
 
         [Required]
         public int IdHorario { get; set; }
 
-        public Horario Horario { get; set;}
+        public Horario? Horario { get; set;}
 
         [Required]
         public bool Disponible { get; set; }
@@ -36,7 +36,7 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         
         public int? IdMascota { get; set; }
 
-        public Mascota Mascota { get; set; }
+        public Mascota? Mascota { get; set; }
 
         public bool? Asistio { get; set; }
 
