@@ -1,6 +1,6 @@
 ﻿using ApiAdministracionPeluqueria.Models;
 using ApiAdministracionPeluqueria.Models.Entidades;
-using Microsoft.AspNetCore.Http;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.CalendarioDTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +19,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         [HttpPost]
 
-        public async Task<ActionResult> GenerarCalendario([FromBody] CrearCalendario parametros)
+        public async Task<ActionResult> CrearCalendario([FromBody] CalendarioDTO parametros)
         {
             
             #region CARGAR DIAS
@@ -27,7 +27,7 @@ namespace ApiAdministracionPeluqueria.Controllers
             DateTime fechaCargar= DateTime.Now;
 
 
-            for (int i = 0; i < parametros.Cantidad; i++)
+            for (int i = 0; i < parametros.CantidadDias; i++)
             {
                 var fecha = new Fecha();
                 
@@ -44,9 +44,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             #region CARGAR HORARIOS
 
-            TimeSpan horaInicio = new TimeSpan(parametros.HoraInicio,0,0);
+            TimeSpan horaInicio = new TimeSpan(parametros.HoraInicioTurnos,0,0);
             
-            TimeSpan horaFin = new TimeSpan(parametros.HoraFin, 0, 0);
+            TimeSpan horaFin = new TimeSpan(parametros.HoraFinTurnos, 0, 0);
 
             TimeSpan intervalo = new TimeSpan(0,parametros.IntervaloTurnos,0);
 
@@ -76,7 +76,7 @@ namespace ApiAdministracionPeluqueria.Controllers
             var horarios = await context.Horarios.ToListAsync();
 
             #region GENERAR TURNOS
-
+            //Por cada dia cargado, se generan los turnos con cada horario disponible
             fechas.ForEach(fecha  =>
             {
                 horarios.ForEach(horario =>
