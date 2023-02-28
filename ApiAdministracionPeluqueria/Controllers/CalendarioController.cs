@@ -22,9 +22,11 @@ namespace ApiAdministracionPeluqueria.Controllers
         public async Task<ActionResult> GenerarCalendario([FromBody] CrearCalendario parametros)
         {
             
+            #region CARGAR DIAS
+            
             DateTime fechaCargar= DateTime.Now;
-            
-            
+
+
             for (int i = 0; i < parametros.Cantidad; i++)
             {
                 var fecha = new Fecha();
@@ -36,6 +38,11 @@ namespace ApiAdministracionPeluqueria.Controllers
                 fechaCargar = fechaCargar.AddDays(1);
 
             }
+
+            #endregion
+
+
+            #region CARGAR HORARIOS
 
             TimeSpan horaInicio = new TimeSpan(parametros.HoraInicio,0,0);
             
@@ -56,11 +63,19 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             }
 
+            #endregion
+
+            //Guardar los dias y horarios cargados en la Base de Datos
+            
             await context.SaveChangesAsync();
 
+            
+
+            //Buscar los dias y horarios en la base de datos
             var fechas = await context.Fechas.ToListAsync();
             var horarios = await context.Horarios.ToListAsync();
 
+            #region GENERAR TURNOS
 
             fechas.ForEach(fecha  =>
             {
@@ -73,6 +88,12 @@ namespace ApiAdministracionPeluqueria.Controllers
                 });
  
             });
+
+            #endregion
+
+
+
+            //Guardar los turnos cargados en la base de datos
 
             await context.SaveChangesAsync();
 
