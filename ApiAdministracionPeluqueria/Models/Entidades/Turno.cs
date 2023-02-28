@@ -22,12 +22,12 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         [Required]
         public bool Disponible { get; set; }
 
-        [Required]
-        public int IdMascota { get; set; }
+        
+        public int? IdMascota { get; set; }
 
         public Mascota Mascota { get; set; }
 
-        public bool Asistio { get; set; }
+        public bool? Asistio { get; set; }
 
     }
 }
