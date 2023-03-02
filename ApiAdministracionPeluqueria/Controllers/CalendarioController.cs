@@ -44,7 +44,8 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             nuevoCalendario.IdAdministrador = nuevoCalendarioDTO.IdAdministrador;
 
-            
+            context.Calendarios.Add(nuevoCalendario);
+            await context.SaveChangesAsync();
 
 
             #region CARGAR DIAS
@@ -99,7 +100,7 @@ namespace ApiAdministracionPeluqueria.Controllers
             {
                 horarios.ForEach(horario =>
                 {
-                    Turno nuevoTurno = new Turno(fecha.Id, horario.Id, true , false);
+                    Turno nuevoTurno = new Turno(fecha.Id, horario.Id, true , false, nuevoCalendario.Id);
 
                     context.Turnos.Add(nuevoTurno);
                     

@@ -10,5 +10,8 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         public int Id { get; set; }
         [Required]
         public DateTime Dia { get; set; }
+
+        [Required]
+        public int IdCalendario { get; set; }
     }
 }

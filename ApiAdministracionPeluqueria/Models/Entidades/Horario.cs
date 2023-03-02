@@ -11,5 +11,8 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
 
         [Required]
         public TimeSpan Hora { get; set; }
+
+        [Required]
+        public int IdCalendario { get; set; }
     }
 }
