@@ -87,3 +87,9 @@ D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiA
 D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\obj\Debug\net6.0\ref\ApiAdministracionPeluqueria.dll
 D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\AutoMapper.dll
 D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
+D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Microsoft.AspNetCore.Cryptography.Internal.dll
+D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Microsoft.Extensions.Identity.Core.dll
+D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Microsoft.Extensions.Identity.Stores.dll
