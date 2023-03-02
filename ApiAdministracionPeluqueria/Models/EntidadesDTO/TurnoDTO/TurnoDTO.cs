@@ -28,5 +28,8 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO
         public bool? Asistio { get; set; }
 
         public int? Precio { get; set; }
+
+        [Required]
+        public int IdAdministrador { get; set; }
     }
 }
