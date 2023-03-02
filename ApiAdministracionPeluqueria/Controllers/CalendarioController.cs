@@ -21,7 +21,19 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         public async Task<ActionResult> CrearCalendario([FromBody] CalendarioCreacionDTO nuevoCalendarioDTO)
         {
+            var calendarios = await context.Calendarios.Where(calendario => calendario.IdAdministrador == nuevoCalendarioDTO.IdAdministrador).ToArrayAsync();
+
+
+            if (calendarios.Length > 1) return NotFound("No se puede tener más de 2 calendarios");
             
+
+            string nombreCalendario = calendarios[0].Nombre;
+
+            if (nuevoCalendarioDTO.Nombre.ToUpper() == nombreCalendario.ToUpper()) return NotFound("No se puede tener 2 calendarios con el mismo nombre");
+            
+
+            
+
             TimeSpan horaInicio = new TimeSpan(nuevoCalendarioDTO.HoraInicioTurnos,0,0);
             
             TimeSpan horaFin = new TimeSpan(nuevoCalendarioDTO.HoraFinTurnos, 0, 0);
@@ -59,6 +71,8 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 fecha.Dia = fechaCargar;
 
+                fecha.IdCalendario = nuevoCalendario.Id;
+
                 context.Fechas.Add(fecha);
 
                 fechaCargar = fechaCargar.AddDays(1);
@@ -75,6 +89,8 @@ namespace ApiAdministracionPeluqueria.Controllers
                 Horario horario = new Horario();
 
                 horario.Hora = horaInicio;
+
+                horario.IdCalendario = nuevoCalendario.Id;
             
                 context.Horarios.Add(horario);
             
@@ -91,8 +107,8 @@ namespace ApiAdministracionPeluqueria.Controllers
             
 
             //Buscar los dias y horarios en la base de datos
-            var fechas = await context.Fechas.ToListAsync();
-            var horarios = await context.Horarios.ToListAsync();
+            var fechas = await context.Fechas.Where(fecha => fecha.IdCalendario == nuevoCalendario.Id).ToListAsync();
+            var horarios = await context.Horarios.Where(horario => horario.IdCalendario == nuevoCalendario.Id).ToListAsync();
 
             #region GENERAR TURNOS
             //Por cada dia cargado, se generan los turnos con cada horario disponible
