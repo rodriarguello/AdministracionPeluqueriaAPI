@@ -21,15 +21,24 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         public async Task<ActionResult> CrearCalendario([FromBody] CalendarioCreacionDTO nuevoCalendarioDTO)
         {
-            var calendarios = await context.Calendarios.Where(calendario => calendario.IdAdministrador == nuevoCalendarioDTO.IdAdministrador).ToArrayAsync();
+            if (nuevoCalendarioDTO.HoraInicioTurnos < 0) return BadRequest("La hora de inicio no puede ser un número negativo");
+
+            if (nuevoCalendarioDTO.HoraFinTurnos < nuevoCalendarioDTO.HoraInicioTurnos) return BadRequest("La hora de fin no puede ser menor que la hora de inicio");
+
+            if (nuevoCalendarioDTO.IntervaloTurnos < 10) return BadRequest("El intervalo entre turnos tiene que ser de 10 minutos como mínimo");
+
+            if (nuevoCalendarioDTO.FechaFin == nuevoCalendarioDTO.FechaInicio) return BadRequest("La fecha de inicio del calendario no puede ser igual a la fecha de fin");
+
+            
+            var calendarios = await context.Calendarios.Where(calendario => calendario.IdAdministrador == nuevoCalendarioDTO.IdAdministrador).ToListAsync();
 
 
-            if (calendarios.Length > 1) return NotFound("No se puede tener más de 2 calendarios");
+            if (calendarios.Count > 1) return BadRequest("No se puede tener más de 2 calendarios");
             
 
             string nombreCalendario = calendarios[0].Nombre;
 
-            if (nuevoCalendarioDTO.Nombre.ToUpper() == nombreCalendario.ToUpper()) return NotFound("No se puede tener 2 calendarios con el mismo nombre");
+            if (nuevoCalendarioDTO.Nombre.ToUpper() == nombreCalendario.ToUpper()) return BadRequest("No se puede tener 2 calendarios con el mismo nombre");
             
 
             
