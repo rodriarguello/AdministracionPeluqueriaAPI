@@ -41,7 +41,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #endregion
 
-
+        //Hay que cambiarlo por PATCH
 
         #region METODOS PUT
         [HttpPut]

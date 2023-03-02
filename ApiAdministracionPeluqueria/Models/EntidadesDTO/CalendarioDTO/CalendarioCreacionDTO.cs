@@ -2,33 +2,30 @@
 
 namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.CalendarioDTO
 {
-    public class CalendarioDTO
+    public class CalendarioCreacionDTO
     {
-
         
-        [Required]
-        public int Id { get; set; }
-
         [Required]
         public string Nombre { get; set; }
-        
+
         [Required]
         public DateTime FechaInicio { get; set; }
-        
+
         [Required]
         public DateTime FechaFin { get; set; }
-        
+
         [Required]
-        public TimeSpan HoraInicioTurnos { get; set; }
-        
+        public int HoraInicioTurnos { get; set; }
+
         [Required]
-        public TimeSpan HoraFinTurnos { get; set; }
-        
+        public int HoraFinTurnos { get; set; }
+
         [Required]
-        public TimeSpan IntervaloTurnos { get; set; }
+        public int IntervaloTurnos { get; set; }
 
         [Required]
 
         public int IdAdministrador { get; set; }
+
     }
 }

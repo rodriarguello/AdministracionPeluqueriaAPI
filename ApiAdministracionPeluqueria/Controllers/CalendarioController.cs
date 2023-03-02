@@ -19,36 +19,54 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         [HttpPost]
 
-        public async Task<ActionResult> CrearCalendario([FromBody] CalendarioDTO parametros)
+        public async Task<ActionResult> CrearCalendario([FromBody] CalendarioCreacionDTO nuevoCalendarioDTO)
         {
             
-            #region CARGAR DIAS
+            TimeSpan horaInicio = new TimeSpan(nuevoCalendarioDTO.HoraInicioTurnos,0,0);
             
-            DateTime fechaCargar= DateTime.Now;
+            TimeSpan horaFin = new TimeSpan(nuevoCalendarioDTO.HoraFinTurnos, 0, 0);
+
+            TimeSpan intervalo = new TimeSpan(0,nuevoCalendarioDTO.IntervaloTurnos,0);
+
+            Calendario nuevoCalendario = new Calendario();
+            
+            nuevoCalendario.Nombre = nuevoCalendarioDTO.Nombre;
+            
+            nuevoCalendario.FechaInicio = nuevoCalendarioDTO.FechaInicio;
+
+            nuevoCalendario.FechaFin = nuevoCalendarioDTO.FechaFin;
+
+            nuevoCalendario.HoraInicioTurnos = horaInicio;
+            
+            nuevoCalendario.HoraFinTurnos = horaFin;
+            
+            nuevoCalendario.IntervaloTurnos= intervalo;
+
+            nuevoCalendario.IdAdministrador = nuevoCalendarioDTO.IdAdministrador;
+
+            
 
 
-            for (int i = 0; i < parametros.CantidadDias; i++)
+            #region CARGAR DIAS
+
+            DateTime fechaCargar = nuevoCalendarioDTO.FechaInicio;
+
+
+            while (fechaCargar < nuevoCalendario.FechaFin)
             {
                 var fecha = new Fecha();
-                
-                fecha.Dia = fechaCargar;
-                
-                context.Fechas.Add(fecha);
-                
-                fechaCargar = fechaCargar.AddDays(1);
 
+                fecha.Dia = fechaCargar;
+
+                context.Fechas.Add(fecha);
+
+                fechaCargar = fechaCargar.AddDays(1);
             }
 
             #endregion
 
 
             #region CARGAR HORARIOS
-
-            TimeSpan horaInicio = new TimeSpan(parametros.HoraInicioTurnos,0,0);
-            
-            TimeSpan horaFin = new TimeSpan(parametros.HoraFinTurnos, 0, 0);
-
-            TimeSpan intervalo = new TimeSpan(0,parametros.IntervaloTurnos,0);
 
             
             while (horaInicio<horaFin)

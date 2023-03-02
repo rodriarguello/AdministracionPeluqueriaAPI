@@ -25,6 +25,8 @@ namespace ApiAdministracionPeluqueria.Models
         public DbSet<Raza> Razas { get; set; }
 
         public DbSet<Turno> Turnos { get; set; }
+
+        public DbSet<Calendario> Calendarios { get; set; }
         
     }
 }
