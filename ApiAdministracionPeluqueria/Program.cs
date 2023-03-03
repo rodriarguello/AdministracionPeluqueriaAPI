@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +19,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("conexionSql")));
 
@@ -42,6 +43,48 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     }) ;
 #endregion
 
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header
+
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                Type  = ReferenceType.SecurityScheme,
+                Id = "Bearer"
+
+                }
+            },
+
+            new string[]{}
+
+        }
+
+    });
+
+
+});
+
+
+
+
+
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 
 builder.Services.AddIdentity<Usuario, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
