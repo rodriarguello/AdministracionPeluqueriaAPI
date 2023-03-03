@@ -6,11 +6,11 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
     public class Usuario : IdentityUser
     {
         [MaxLength(50)]
-        public string Nombres { get; set; }
+        public string? Nombres { get; set; }
         [MaxLength(50)]
-        public string Apellido { get; set;}
+        public string? Apellido { get; set;}
         [MaxLength(50)]
-        public string NombrePeluqueria { get; set;}
+        public string? NombrePeluqueria { get; set;}
 
     }
 }
