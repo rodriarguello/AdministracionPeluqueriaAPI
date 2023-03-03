@@ -6,11 +6,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ApiAdministracionPeluqueria.Controllers
 {
     [Route("api/enfermedades")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class EnfermedadesController : ControllerBase
     {
         private readonly ApplicationDbContext context;
