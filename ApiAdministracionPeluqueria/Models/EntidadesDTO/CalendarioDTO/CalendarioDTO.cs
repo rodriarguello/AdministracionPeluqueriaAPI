@@ -29,6 +29,6 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.CalendarioDTO
 
         [Required]
 
-        public int IdAdministrador { get; set; }
+        public string IdUsuario { get; set; }
     }
 }

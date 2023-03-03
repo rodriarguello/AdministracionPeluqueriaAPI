@@ -23,5 +23,10 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         
         public List<Mascota> Mascota { get; set; }
 
+        [Required]
+        public string IdUsuario { get; set; }
+
+        public Usuario Usuario { get; set; }
+
     }
 }

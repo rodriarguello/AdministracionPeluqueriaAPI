@@ -11,6 +11,8 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         [Required]
         public string Nombre { get; set; }
 
+        [Required]
+        public string IdUsuario { get; set; }
 
     }
 }

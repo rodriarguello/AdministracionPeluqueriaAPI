@@ -11,6 +11,8 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO
         [Required]
         public string Nombre { get; set; }
 
+        [Required]
+        public string IdUsuario { get; set; }
 
     }
 }

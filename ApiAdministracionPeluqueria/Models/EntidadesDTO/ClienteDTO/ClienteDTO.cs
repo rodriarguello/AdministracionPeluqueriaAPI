@@ -6,7 +6,6 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO
     public class ClienteDTO
     {
         [Required]
-        [Key]
         public int Id { get; set; }
 
         [Required]
@@ -22,6 +21,9 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO
         public int? IdMascota { get; set; }
 
         public List<Mascota> Mascota { get; set; }
+
+        [Required]
+        public string IdUsuario { get; set; }
 
 
     }

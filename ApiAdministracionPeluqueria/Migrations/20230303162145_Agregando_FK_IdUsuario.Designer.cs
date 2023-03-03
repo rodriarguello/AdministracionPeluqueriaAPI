@@ -4,6 +4,7 @@ using ApiAdministracionPeluqueria.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApiAdministracionPeluqueria.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230303162145_Agregando_FK_IdUsuario")]
+    partial class Agregando_FK_IdUsuario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,9 +44,14 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UsuarioId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MascotaId");
+
+                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Alergias");
                 });
@@ -529,6 +537,12 @@ namespace ApiAdministracionPeluqueria.Migrations
                     b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Mascota", null)
                         .WithMany("Alergia")
                         .HasForeignKey("MascotaId");
+
+                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId");
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Calendario", b =>

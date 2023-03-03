@@ -3,6 +3,7 @@ using ApiAdministracionPeluqueria.Models.Entidades;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.CalendarioDTO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,16 +15,29 @@ namespace ApiAdministracionPeluqueria.Controllers
     public class CalendarioController : ControllerBase
     {
         private readonly ApplicationDbContext context;
+        private readonly UserManager<Usuario> userManager;
 
-        public CalendarioController(ApplicationDbContext context)
+
+        //Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJvZHJpYXJndWVsbG85NkBnbWFpbC5jb20iLCJleHAiOjE2Nzc5NDk5ODB9.JjeMWJQWKUpPHbAHL3dBpV8Mc1D-rY42QSgrMFvSf8U
+        public CalendarioController(ApplicationDbContext context, UserManager<Usuario> userManager)
         {
             this.context = context;
+            this.userManager = userManager;
         }
 
         [HttpPost]
 
         public async Task<ActionResult> CrearCalendario([FromBody] CalendarioCreacionDTO nuevoCalendarioDTO)
         {
+
+            var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+            var email = emailClaim.Value;
+
+            var usuario = await userManager.FindByEmailAsync(email);
+
+            var usuarioId = usuario.Id;
+
             if (nuevoCalendarioDTO.HoraInicioTurnos < 0) return BadRequest("La hora de inicio no puede ser un número negativo");
 
             if (nuevoCalendarioDTO.HoraFinTurnos < nuevoCalendarioDTO.HoraInicioTurnos) return BadRequest("La hora de fin no puede ser menor que la hora de inicio");
@@ -33,15 +47,20 @@ namespace ApiAdministracionPeluqueria.Controllers
             if (nuevoCalendarioDTO.FechaFin == nuevoCalendarioDTO.FechaInicio) return BadRequest("La fecha de inicio del calendario no puede ser igual a la fecha de fin");
 
             
-            var calendarios = await context.Calendarios.Where(calendario => calendario.IdAdministrador == nuevoCalendarioDTO.IdAdministrador).ToListAsync();
+            var calendarios = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuarioId).ToListAsync();
 
 
-            if (calendarios.Count > 1) return BadRequest("No se puede tener más de 2 calendarios");
+
+            if (calendarios.Count > 0)
+            {   
+                if(calendarios.Count == 2) return BadRequest("No se puede tener más de 2 calendarios");
+
+                string nombreCalendario = calendarios[0].Nombre;
+
+                if (nuevoCalendarioDTO.Nombre.ToUpper() == nombreCalendario.ToUpper()) return BadRequest("No se puede tener 2 calendarios con el mismo nombre");
+
+            }
             
-
-            string nombreCalendario = calendarios[0].Nombre;
-
-            if (nuevoCalendarioDTO.Nombre.ToUpper() == nombreCalendario.ToUpper()) return BadRequest("No se puede tener 2 calendarios con el mismo nombre");
             
 
             
@@ -66,7 +85,7 @@ namespace ApiAdministracionPeluqueria.Controllers
             
             nuevoCalendario.IntervaloTurnos= intervalo;
 
-            nuevoCalendario.IdAdministrador = nuevoCalendarioDTO.IdAdministrador;
+            nuevoCalendario.IdUsuario = usuarioId;
 
             context.Calendarios.Add(nuevoCalendario);
             await context.SaveChangesAsync();

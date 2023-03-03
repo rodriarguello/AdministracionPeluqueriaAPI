@@ -23,7 +23,8 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         public TimeSpan IntervaloTurnos { get; set; }
 
         [Required]
+        public string IdUsuario  { get; set; }
 
-        public int IdAdministrador { get; set; }
+        public Usuario Usuario { get; set;}
     }
 }
