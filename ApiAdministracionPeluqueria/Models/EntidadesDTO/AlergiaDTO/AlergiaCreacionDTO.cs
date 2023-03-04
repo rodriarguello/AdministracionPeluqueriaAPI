@@ -11,8 +11,7 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO
 
         public string Nombre { get; set; }
 
-        [Required]
-        public string IdUsuario { get; set; }
+        
 
     }
 }

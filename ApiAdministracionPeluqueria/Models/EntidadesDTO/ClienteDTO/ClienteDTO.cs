@@ -22,8 +22,7 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO
 
         public List<Mascota> Mascota { get; set; }
 
-        [Required]
-        public string IdUsuario { get; set; }
+        
 
 
     }

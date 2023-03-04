@@ -7,9 +7,6 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.RazaDTO
         [Required]
         public string Nombre { get; set; }
 
-        [Required]
-        public string IdUsuario { get; set; }
-
 
     }
 }

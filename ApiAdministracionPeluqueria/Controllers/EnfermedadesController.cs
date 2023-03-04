@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace ApiAdministracionPeluqueria.Controllers
 {
@@ -18,12 +19,14 @@ namespace ApiAdministracionPeluqueria.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly UserManager<Usuario> userManager;
 
         #region Constructor
-        public EnfermedadesController(ApplicationDbContext context, IMapper mapper)
+        public EnfermedadesController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager)
         {
             this.context = context;
             this.mapper = mapper;
+            this.userManager = userManager;
         }
 
         #endregion
@@ -35,8 +38,14 @@ namespace ApiAdministracionPeluqueria.Controllers
         [HttpGet]
         public async Task<ActionResult<List<EnfermedadDTO>>> GetEnfermedades()
         {
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var enfermedades = await context.Enfermedades.ToListAsync();
+            var email = claimEmail.Value;
+
+            var usuario = await userManager.FindByEmailAsync(email);
+
+
+            var enfermedades = await context.Enfermedades.Where(enfermedad => enfermedad.IdUsuario == usuario.Id).ToListAsync();
 
             return mapper.Map<List<EnfermedadDTO>>(enfermedades);
 
@@ -52,10 +61,19 @@ namespace ApiAdministracionPeluqueria.Controllers
         [HttpPost]
         public async Task<ActionResult<EnfermedadDTO>> PostEnfermedad([FromBody] EnfermedadCreacionDTO nuevaEnfermedadDTO)
         {
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+            var email = claimEmail.Value;
+
+            var usuario = await userManager.FindByEmailAsync(email);
 
             var nuevaEnfermedad = mapper.Map<Enfermedad>(nuevaEnfermedadDTO);
 
+            nuevaEnfermedad.IdUsuario = usuario.Id;
+
+            
             context.Add(nuevaEnfermedad);
+            
             await context.SaveChangesAsync();
 
             return mapper.Map<EnfermedadDTO>(nuevaEnfermedad);

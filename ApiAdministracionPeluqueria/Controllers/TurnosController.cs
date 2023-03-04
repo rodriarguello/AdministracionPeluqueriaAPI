@@ -1,10 +1,12 @@
 ﻿using ApiAdministracionPeluqueria.Models;
 using ApiAdministracionPeluqueria.Models.Entidades;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.CalendarioDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,12 +19,14 @@ namespace ApiAdministracionPeluqueria.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly UserManager<Usuario> userManager;
 
         #region Constructor
-        public TurnosController(ApplicationDbContext context, IMapper mapper)
+        public TurnosController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager)
         {
             this.context = context;
             this.mapper = mapper;
+            this.userManager = userManager;
         }
 
 
@@ -31,11 +35,31 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region METODOS GET
 
-        [HttpGet]
-        public async Task<ActionResult<List<TurnoDTO>>> GetTurnos()
+        [HttpGet("{calendarioId:int}")]
+
+        public async Task<ActionResult<List<TurnoDTO>>> GetTurnos(int calendarioId)
         {
 
-            var turnos = await context.Turnos.ToListAsync();
+
+
+            var existeCalendario = await context.Calendarios.AnyAsync(calendario => calendario.Id == calendarioId);
+
+            if (!existeCalendario) return BadRequest("No existe un calendario con el Id especificado");
+            
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+            var email = claimEmail.Value;
+
+            var usuario = await userManager.FindByEmailAsync(email);
+
+            var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).
+                FirstOrDefaultAsync(calendario=>calendario.Id == calendarioId);
+
+
+            if (calendario==null) return BadRequest("No existe un calendario con el Id especificado para este usuario");
+
+
+            var turnos = await context.Turnos.Where(turnos => turnos.IdCalendario == calendarioId).ToListAsync();
             
 
             return mapper.Map<List<TurnoDTO>>(turnos);

@@ -1,6 +1,7 @@
 ﻿using ApiAdministracionPeluqueria.Models;
 using ApiAdministracionPeluqueria.Models.Entidades;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.CalendarioDTO;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -16,17 +17,44 @@ namespace ApiAdministracionPeluqueria.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly UserManager<Usuario> userManager;
+        private readonly IMapper mapper;
 
 
-        //Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJvZHJpYXJndWVsbG85NkBnbWFpbC5jb20iLCJleHAiOjE2Nzc5NDk5ODB9.JjeMWJQWKUpPHbAHL3dBpV8Mc1D-rY42QSgrMFvSf8U
-        public CalendarioController(ApplicationDbContext context, UserManager<Usuario> userManager)
+        public CalendarioController(ApplicationDbContext context, UserManager<Usuario> userManager, IMapper mapper)
         {
             this.context = context;
             this.userManager = userManager;
+            this.mapper = mapper;
         }
 
-        [HttpPost]
 
+        #region MOSTRAR CALENDARIOS
+
+        [HttpGet]
+
+        public async Task<ActionResult<List<CalendarioDTO>>> GetCalendarios()
+        {
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+            var email = claimEmail.Value;
+
+            var usuario = await userManager.FindByEmailAsync(email);
+
+            var calendarios = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).ToListAsync();
+
+            
+
+            return mapper.Map<List<CalendarioDTO>>(calendarios);
+
+
+        }
+
+
+        #endregion
+
+        #region CREAR CALENDARIO
+
+        [HttpPost]
         public async Task<ActionResult> CrearCalendario([FromBody] CalendarioCreacionDTO nuevoCalendarioDTO)
         {
 
@@ -37,6 +65,9 @@ namespace ApiAdministracionPeluqueria.Controllers
             var usuario = await userManager.FindByEmailAsync(email);
 
             var usuarioId = usuario.Id;
+
+            #region VALIDACIONES
+
 
             if (nuevoCalendarioDTO.HoraInicioTurnos < 0) return BadRequest("La hora de inicio no puede ser un número negativo");
 
@@ -60,10 +91,10 @@ namespace ApiAdministracionPeluqueria.Controllers
                 if (nuevoCalendarioDTO.Nombre.ToUpper() == nombreCalendario.ToUpper()) return BadRequest("No se puede tener 2 calendarios con el mismo nombre");
 
             }
-            
-            
 
-            
+
+            #endregion
+
 
             TimeSpan horaInicio = new TimeSpan(nuevoCalendarioDTO.HoraInicioTurnos,0,0);
             
@@ -142,6 +173,8 @@ namespace ApiAdministracionPeluqueria.Controllers
             var horarios = await context.Horarios.Where(horario => horario.IdCalendario == nuevoCalendario.Id).ToListAsync();
 
             #region GENERAR TURNOS
+
+
             //Por cada dia cargado, se generan los turnos con cada horario disponible
             fechas.ForEach(fecha  =>
             {
@@ -167,6 +200,8 @@ namespace ApiAdministracionPeluqueria.Controllers
             return Ok();
 
         }
+
+        #endregion
 
     }
 }

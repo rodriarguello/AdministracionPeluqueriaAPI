@@ -27,8 +27,6 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.CalendarioDTO
         [Required]
         public TimeSpan IntervaloTurnos { get; set; }
 
-        [Required]
-
-        public string IdUsuario { get; set; }
+        
     }
 }

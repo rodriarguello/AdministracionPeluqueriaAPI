@@ -5,8 +5,10 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace ApiAdministracionPeluqueria.Controllers
 {
@@ -17,12 +19,15 @@ namespace ApiAdministracionPeluqueria.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly UserManager<Usuario> userManager;
 
         #region Constructor
-        public AlergiasController(ApplicationDbContext context, IMapper mapper)
+        public AlergiasController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager)
         {
             this.context = context;
             this.mapper = mapper;
+            this.userManager = userManager;
+
         }
 
         #endregion
@@ -35,7 +40,14 @@ namespace ApiAdministracionPeluqueria.Controllers
         public async Task<ActionResult<List<AlergiaDTO>>> GetAlergias()
         {
 
-            var alergias = await context.Alergias.ToListAsync();
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+            var email = claimEmail.Value;
+
+            var usuario = await userManager.FindByEmailAsync(email);
+
+
+            var alergias = await context.Alergias.Where(alergia => alergia.IdUsuario == usuario.Id).ToListAsync();
 
             return mapper.Map<List<AlergiaDTO>>(alergias);
 
@@ -52,7 +64,15 @@ namespace ApiAdministracionPeluqueria.Controllers
         public async Task<ActionResult<AlergiaDTO>> PostAlergia([FromBody]AlergiaCreacionDTO nuevaAlergiaDTO)
         {
 
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+            var email = claimEmail.Value;
+
+            var usuario = await userManager.FindByEmailAsync(email);
+
             var nuevaAlergia = mapper.Map<Alergia>(nuevaAlergiaDTO);
+
+            nuevaAlergia.IdUsuario = usuario.Id;
 
             context.Add(nuevaAlergia);
             await context.SaveChangesAsync();
@@ -103,6 +123,8 @@ namespace ApiAdministracionPeluqueria.Controllers
         }
 
         #endregion
+
+
 
 
     }

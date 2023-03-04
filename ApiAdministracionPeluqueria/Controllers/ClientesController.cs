@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,13 +19,15 @@ namespace ApiAdministracionPeluqueria.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly UserManager<Usuario> userManager;
 
 
         #region Constructor
-        public ClientesController(ApplicationDbContext context, IMapper mapper)
+        public ClientesController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager)
         {
             this.context = context;
             this.mapper = mapper;
+            this.userManager = userManager;
         }
         #endregion
 
@@ -35,9 +38,13 @@ namespace ApiAdministracionPeluqueria.Controllers
         [HttpGet]
         public async Task<ActionResult<List<ClienteDTO>>> GetClientes()
         {
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
+            var email = claimEmail.Value;
 
-            var clientes = await context.Clientes.ToListAsync();
+            var usuario = await userManager.FindByEmailAsync(email);
+
+            var clientes = await context.Clientes.Where(cliente=> cliente.IdUsuario == usuario.Id).ToListAsync();
 
 
             return mapper.Map<List<ClienteDTO>>(clientes);
@@ -46,7 +53,13 @@ namespace ApiAdministracionPeluqueria.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ClienteDTO>> GetCliente([FromRoute]int id)
         {
-            var cliente = await context.Clientes.FirstOrDefaultAsync(x=> x.Id == id);
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+            var email = claimEmail.Value;
+
+            var usuario = await userManager.FindByEmailAsync(email);
+
+            var cliente = await context.Clientes.Where(cliente=>cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(x=> x.Id == id);
 
             if (cliente == null) return NotFound();
 
@@ -66,10 +79,18 @@ namespace ApiAdministracionPeluqueria.Controllers
         [HttpPost]
         public async Task<ActionResult<ClienteDTO>> PostCliente([FromBody]ClienteCreacionDTO nuevoClienteDTO)
         {
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+            var email = claimEmail.Value;
+
+            var usuario = await userManager.FindByEmailAsync(email);
 
             var nuevoCliente = mapper.Map<Cliente>(nuevoClienteDTO);
 
+            nuevoCliente.IdUsuario = usuario.Id;
             context.Add(nuevoCliente);
+
+
            await context.SaveChangesAsync();
 
 
