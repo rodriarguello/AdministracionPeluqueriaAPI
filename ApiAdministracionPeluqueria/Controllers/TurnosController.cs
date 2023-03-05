@@ -40,8 +40,6 @@ namespace ApiAdministracionPeluqueria.Controllers
         public async Task<ActionResult<List<TurnoDTO>>> GetTurnos(int calendarioId)
         {
 
-
-
             var existeCalendario = await context.Calendarios.AnyAsync(calendario => calendario.Id == calendarioId);
 
             if (!existeCalendario) return BadRequest("No existe un calendario con el Id especificado");
