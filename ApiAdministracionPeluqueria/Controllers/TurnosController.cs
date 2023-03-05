@@ -33,11 +33,11 @@ namespace ApiAdministracionPeluqueria.Controllers
         #endregion
 
 
-        #region METODOS GET
+        #region MOSTRAR TURNOS
 
         [HttpGet("{calendarioId:int}")]
 
-        public async Task<ActionResult<List<TurnoDTO>>> GetTurnos(int calendarioId)
+        public async Task<ActionResult<List<TurnoDTO>>> Get(int calendarioId)
         {
 
             var existeCalendario = await context.Calendarios.AnyAsync(calendario => calendario.Id == calendarioId);
@@ -68,7 +68,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         //Hay que cambiarlo por PATCH
 
-        #region METODOS PUT
+        #region MODIFICAR TURNO
         [HttpPut]
         public async Task<ActionResult> PutTurno([FromBody]TurnoModificarDTO turnoDTO)
         {
@@ -89,7 +89,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-        #region METODOS DELETE
+        #region ELIMINAR TURNO
 
         #endregion
     }

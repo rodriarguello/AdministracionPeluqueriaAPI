@@ -20,15 +20,20 @@ namespace ApiAdministracionPeluqueria.Controllers
         private readonly IMapper mapper;
         private readonly UserManager<Usuario> userManager;
 
+
         public MascotasController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager)
         {
             this.context = context;
             this.mapper = mapper;
             this.userManager = userManager;
         }
-    
+
+
+
+        #region MOSTRAR MASCOTAS
+
         [HttpGet("{idCliente:int}")]
-        public async Task<ActionResult<List<MascotaDTO>>> GetMascotasCliente(int idCliente)
+        public async Task<ActionResult<List<MascotaDTO>>> GetMascotasCliente([FromRoute]int idCliente)
         {
 
 
@@ -53,9 +58,14 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         }
 
+        #endregion
+
+
+
+        #region INSERTAR MASCOTA
 
         [HttpPost]
-        public async Task<ActionResult<MascotaDTO>> PostMascota(MascotaCreacionDTO nuevaMascotaDTO)
+        public async Task<ActionResult<MascotaDTO>> Post([FromBody]MascotaCreacionDTO nuevaMascotaDTO)
         {
             var claimEmail = HttpContext.User.Claims.Where(claims => claims.Type == "email").FirstOrDefault();
 
@@ -89,6 +99,8 @@ namespace ApiAdministracionPeluqueria.Controllers
             return mapper.Map<MascotaDTO>(nuevaMascota);
 
         }
+
+        #endregion
 
 
 

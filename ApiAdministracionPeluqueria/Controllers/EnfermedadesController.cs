@@ -33,10 +33,10 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-        #region Metodos GET
+        #region MOSTRAR ENFERMEDADES
 
         [HttpGet]
-        public async Task<ActionResult<List<EnfermedadDTO>>> GetEnfermedades()
+        public async Task<ActionResult<List<EnfermedadDTO>>> Get()
         {
             var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
@@ -59,10 +59,10 @@ namespace ApiAdministracionPeluqueria.Controllers
         #endregion
 
 
-        #region Metodos POST
+        #region INSERTAR ENFERMEDAD
 
         [HttpPost]
-        public async Task<ActionResult<EnfermedadDTO>> PostEnfermedad([FromBody] EnfermedadCreacionDTO nuevaEnfermedadDTO)
+        public async Task<ActionResult<EnfermedadDTO>> Post([FromBody] EnfermedadCreacionDTO nuevaEnfermedadDTO)
         {
             var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
@@ -86,10 +86,10 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-        #region Metodos PUT
+        #region MODIFICAR ENFERMEDAD
 
         [HttpPut]
-        public async Task<ActionResult> PutEnfermedad([FromBody] EnfermedadDTO enfermedadDTO)
+        public async Task<ActionResult> Put([FromBody] EnfermedadDTO enfermedadDTO)
         {
             bool existe = await context.Enfermedades.AnyAsync(enfermedad => enfermedad.Id == enfermedadDTO.Id);
 
@@ -108,9 +108,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-        #region Metodos DELETE
+        #region ELIMINAR ENFERMEDAD
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult> DeleteEnfermedad([FromRoute] int id)
+        public async Task<ActionResult> Delete([FromRoute] int id)
         {
             bool existe = await context.Enfermedades.AnyAsync(enfermedad => enfermedad.Id == id);
 

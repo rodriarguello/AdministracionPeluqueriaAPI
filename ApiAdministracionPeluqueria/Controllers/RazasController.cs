@@ -35,9 +35,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-        #region Metodos GET
+        #region MOSTRAR RAZAS
         [HttpGet]
-        public async Task<ActionResult<List<RazaDTO>>> GetRazas()
+        public async Task<ActionResult<List<RazaDTO>>> Get()
         {
 
             var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
@@ -55,7 +55,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #endregion
 
 
-        #region Metodos POST
+        #region INSERTAR RAZA
 
 
         [HttpPost]
@@ -85,7 +85,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-        #region Metodos PUT
+        #region MODIFICAR RAZA
         [HttpPut]
         public async Task<ActionResult<RazaDTO>> PutRaza([FromBody] RazaDTO razaDTO)
         {
@@ -108,7 +108,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-        #region Metodos DELETE
+        #region ELIMINAR RAZA
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> DeleteRaza([FromRoute]int id)
         {

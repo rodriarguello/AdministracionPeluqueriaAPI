@@ -33,10 +33,10 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-        #region Metodos GET
+        #region MOSTRAR CLIENTES
 
         [HttpGet]
-        public async Task<ActionResult<List<ClienteDTO>>> GetClientes()
+        public async Task<ActionResult<List<ClienteDTO>>> Get()
         {
             var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
@@ -51,7 +51,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<ClienteDTO>> GetCliente([FromRoute]int id)
+        public async Task<ActionResult<ClienteDTO>> GetPorId([FromRoute]int id)
         {
             var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
@@ -74,10 +74,10 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-        #region Metodos POST
+        #region INSERTAR CLIENTE
 
         [HttpPost]
-        public async Task<ActionResult<ClienteDTO>> PostCliente([FromBody]ClienteCreacionDTO nuevoClienteDTO)
+        public async Task<ActionResult<ClienteDTO>> Post([FromBody]ClienteCreacionDTO nuevoClienteDTO)
         {
             var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
@@ -101,10 +101,10 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-        #region Metodos PUT
+        #region MODIFICAR CLIENTES
 
         [HttpPut]
-        public async Task<ActionResult> PutCliente([FromBody]ClienteDTO clienteDTO)
+        public async Task<ActionResult> Put([FromBody]ClienteDTO clienteDTO)
         {
 
             bool existe = await context.Clientes.AnyAsync(cliente => cliente.Id == clienteDTO.Id);
@@ -122,10 +122,10 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-        #region Metodos DELETE
+        #region ELIMINAR CLIENTE
 
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult> DeleteCliente([FromRoute] int id)
+        public async Task<ActionResult> Delete([FromRoute] int id)
         {
 
             bool existe = await context.Clientes.AnyAsync(cliente => cliente.Id == id);
