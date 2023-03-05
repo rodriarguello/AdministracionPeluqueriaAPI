@@ -93,3 +93,7 @@ D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiA
 D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
 D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Microsoft.Extensions.Identity.Core.dll
 D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Microsoft.Extensions.Identity.Stores.dll
+D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Microsoft.AspNetCore.JsonPatch.dll
+D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
+D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Newtonsoft.Json.dll
+D:\Sistema de Gestión de Peluqueria Canina\Api\ApiAdministracionPeluqueria\ApiAdministracionPeluqueria\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll

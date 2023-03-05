@@ -203,5 +203,90 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #endregion
 
+
+
+        #region MODIFICAR CALENDARIO    
+        [HttpPut]
+        public async Task<ActionResult> Put(CalendarioDTO calendarioDTO)
+        {
+            var existeCalendario = await context.Calendarios.AnyAsync(calendario => calendario.Id == calendarioDTO.Id);
+
+            if (!existeCalendario) return NotFound("No existe el calendario con el Id especificado");
+
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+            var email = claimEmail.Value;
+
+            var usuario = await userManager.FindByEmailAsync(email);
+
+
+            var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).FirstOrDefaultAsync(calendario => calendario.Id == calendarioDTO.Id);
+
+            if (calendario == null) return NotFound("El usuario no posee un calendario con el Id especificado");
+
+
+            calendario = mapper.Map<Calendario>(calendarioDTO);
+            context.Update(calendario);
+            await context.SaveChangesAsync();
+
+            return NoContent();
+
+
+        }
+
+
+
+        #endregion
+
+
+
+        #region ELIMINAR CALENDARIO 
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+
+            var existeCalendario = await context.Calendarios.AnyAsync(calendario => calendario.Id == id);
+
+            if (!existeCalendario) return NotFound("No existe el calendario con el Id especificado");
+            
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+            var email = claimEmail.Value;
+
+            var usuario = await userManager.FindByEmailAsync(email);
+
+
+            var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).FirstOrDefaultAsync(calendario=>calendario.Id==id);
+
+            if (calendario == null) return NotFound("El usuario no posee un calendario con el Id especificado");
+
+            var fechas = await context.Fechas.Where(fecha => fecha.IdCalendario == calendario.Id).ToListAsync();
+
+            var horarios = await context.Horarios.Where(horario=>horario.IdCalendario==calendario.Id).ToListAsync();
+
+            var turnos = await context.Turnos.Where(turno=>turno.IdCalendario == calendario.Id).ToListAsync();
+
+            fechas.ForEach(fecha => context.Remove(fecha));
+
+
+            horarios.ForEach(horario => context.Remove(horario));
+
+            turnos.ForEach(turno=> context.Remove(turno));
+            
+            context.Remove(calendario);
+
+            await context.SaveChangesAsync();
+
+            return NoContent();
+
+        }
+
+
+
+        #endregion
+
+
+
+
     }
 }
