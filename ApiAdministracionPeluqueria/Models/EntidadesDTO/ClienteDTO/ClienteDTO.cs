@@ -20,7 +20,7 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO
 
         public int? IdMascota { get; set; }
 
-        public List<Mascota> Mascota { get; set; }
+        //public List<Mascota> Mascota { get; set; }
 
         
 

@@ -23,7 +23,7 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO
 
         public int? IdMascota { get; set; }
 
-        public Mascota? Mascota { get; set; }
+        //public Mascota? Mascota { get; set; }
 
         public bool? Asistio { get; set; }
 

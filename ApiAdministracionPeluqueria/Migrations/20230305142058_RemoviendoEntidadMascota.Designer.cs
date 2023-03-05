@@ -4,6 +4,7 @@ using ApiAdministracionPeluqueria.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApiAdministracionPeluqueria.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230305142058_RemoviendoEntidadMascota")]
+    partial class RemoviendoEntidadMascota
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,16 +37,11 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("MascotaId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MascotaId");
 
                     b.ToTable("Alergias");
                 });
@@ -137,9 +135,6 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("MascotaId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -148,8 +143,6 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MascotaId");
 
                     b.HasIndex("UsuarioId");
 
@@ -192,51 +185,6 @@ namespace ApiAdministracionPeluqueria.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Horarios");
-                });
-
-            modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Mascota", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("ClienteId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("FechaNacimiento")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("IdAlergia")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdCliente")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdEnfermedad")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdRaza")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("IdTurno")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("RazaId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClienteId");
-
-                    b.HasIndex("RazaId");
-
-                    b.ToTable("Mascotas");
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Raza", b =>
@@ -297,9 +245,6 @@ namespace ApiAdministracionPeluqueria.Migrations
                     b.Property<int?>("IdMascota")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MascotaId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("Precio")
                         .HasColumnType("int");
 
@@ -308,8 +253,6 @@ namespace ApiAdministracionPeluqueria.Migrations
                     b.HasIndex("FechaId");
 
                     b.HasIndex("HorarioId");
-
-                    b.HasIndex("MascotaId");
 
                     b.ToTable("Turnos");
                 });
@@ -524,13 +467,6 @@ namespace ApiAdministracionPeluqueria.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Alergia", b =>
-                {
-                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Mascota", null)
-                        .WithMany("Alergia")
-                        .HasForeignKey("MascotaId");
-                });
-
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Calendario", b =>
                 {
                     b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Usuario", "Usuario")
@@ -551,30 +487,11 @@ namespace ApiAdministracionPeluqueria.Migrations
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Enfermedad", b =>
                 {
-                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Mascota", null)
-                        .WithMany("Enfermedad")
-                        .HasForeignKey("MascotaId");
-
                     b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId");
 
                     b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Mascota", b =>
-                {
-                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Cliente", "Cliente")
-                        .WithMany("Mascota")
-                        .HasForeignKey("ClienteId");
-
-                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Raza", "Raza")
-                        .WithMany()
-                        .HasForeignKey("RazaId");
-
-                    b.Navigation("Cliente");
-
-                    b.Navigation("Raza");
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Raza", b =>
@@ -596,15 +513,9 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .WithMany()
                         .HasForeignKey("HorarioId");
 
-                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Mascota", "Mascota")
-                        .WithMany("Turno")
-                        .HasForeignKey("MascotaId");
-
                     b.Navigation("Fecha");
 
                     b.Navigation("Horario");
-
-                    b.Navigation("Mascota");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -656,20 +567,6 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Cliente", b =>
-                {
-                    b.Navigation("Mascota");
-                });
-
-            modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Mascota", b =>
-                {
-                    b.Navigation("Alergia");
-
-                    b.Navigation("Enfermedad");
-
-                    b.Navigation("Turno");
                 });
 #pragma warning restore 612, 618
         }

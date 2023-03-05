@@ -4,6 +4,7 @@ using ApiAdministracionPeluqueria.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApiAdministracionPeluqueria.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230305142250_AgregandoEntidadMascota")]
+    partial class AgregandoEntidadMascota
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -202,7 +205,7 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ClienteId")
+                    b.Property<int>("ClienteId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("FechaNacimiento")
@@ -227,7 +230,7 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("RazaId")
+                    b.Property<int>("RazaId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -566,11 +569,15 @@ namespace ApiAdministracionPeluqueria.Migrations
                 {
                     b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Cliente", "Cliente")
                         .WithMany("Mascota")
-                        .HasForeignKey("ClienteId");
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Raza", "Raza")
                         .WithMany()
-                        .HasForeignKey("RazaId");
+                        .HasForeignKey("RazaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Cliente");
 

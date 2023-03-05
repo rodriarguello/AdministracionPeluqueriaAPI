@@ -47,6 +47,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             var enfermedades = await context.Enfermedades.Where(enfermedad => enfermedad.IdUsuario == usuario.Id).ToListAsync();
 
+            
+            
+
             return mapper.Map<List<EnfermedadDTO>>(enfermedades);
 
         }
