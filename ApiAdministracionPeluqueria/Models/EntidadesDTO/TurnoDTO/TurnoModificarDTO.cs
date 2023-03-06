@@ -5,19 +5,8 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO
 {
     public class TurnoModificarDTO
     {
-        [Required]
-        public int Id { get; set; }
-
-        [Required]
-        public int IdFecha { get; set; }
-
-        [Required]
-        public int IdHorario { get; set; }
-
-        [Required]
-        public bool Disponible { get; set; }
-
-        [Required]
+        
+        
         public int IdMascota { get; set; }
 
         [Required]
@@ -25,8 +14,5 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO
 
         [Required]
         public int Precio { get; set; }
-
-        [Required]
-        public int IdCalendario { get; set; }
     }
 }

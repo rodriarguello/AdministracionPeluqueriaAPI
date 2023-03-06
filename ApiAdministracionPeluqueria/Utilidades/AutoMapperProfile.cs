@@ -50,10 +50,11 @@ namespace ApiAdministracionPeluqueria.Utilidades
             #endregion
 
 
+            // Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJvZHJpYXJndWVsbG85NkBnbWFpbC5jb20iLCJleHAiOjE2NzgyMTEzMDZ9.s3836B6o6MAqSbwfSd6d9c8mZxTOkYNYxihhjbjrLGw
             #region TURNOS
 
 
-            CreateMap<TurnoModificarDTO, Turno>();
+            CreateMap<TurnoModificarDTO, Turno>().ReverseMap();
             CreateMap<TurnoDTO, Turno>().ReverseMap();
 
             #endregion

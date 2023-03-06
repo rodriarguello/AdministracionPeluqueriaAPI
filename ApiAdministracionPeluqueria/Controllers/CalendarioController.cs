@@ -182,7 +182,7 @@ namespace ApiAdministracionPeluqueria.Controllers
             {
                 horarios.ForEach(horario =>
                 {
-                    Turno nuevoTurno = new Turno(fecha.Id, horario.Id, true , false, nuevoCalendario.Id);
+                    Turno nuevoTurno = new Turno(fecha.Id, horario.Id, true , false, nuevoCalendario.Id,usuario.Id);
 
                     context.Turnos.Add(nuevoTurno);
                     

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -66,18 +67,41 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #endregion
 
-        //Hay que cambiarlo por PATCH
 
         #region MODIFICAR TURNO
-        [HttpPut]
-        public async Task<ActionResult> PutTurno([FromBody]TurnoModificarDTO turnoDTO)
+
+
+        [HttpPut("reservar/{id:int}")]
+        public async Task<ActionResult> ReservarTurno([FromRoute] int id , [FromBody] TurnoModificarDTO turnoDTO)
         {
+            
+            
+            if (turnoDTO.Asistio) return BadRequest("Al reservar un turno no se puede enviar TRUE en el campo asistio");
+            
+            var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            var email = emailClaim.Value;
+            var usuario = await userManager.FindByEmailAsync(email);
 
-            bool existe = await context.Turnos.AnyAsync(turno => turno.Id == turnoDTO.Id);
 
-            if(!existe) return NotFound();
 
-            var turno = mapper.Map<Turno>(turnoDTO);
+            var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id).FirstOrDefaultAsync(turno => turno.Id == id);
+
+            if (turno == null) return NotFound("No existe el turno con el Id especificado");
+
+            if (!turno.Disponible) return BadRequest("El turno no esta disponible");
+
+            var existeMascota = await context.Mascotas.Where(mascota => mascota.IdUsuario == usuario.Id).AnyAsync(mascota => mascota.Id == turnoDTO.IdMascota);
+
+            if(!existeMascota) return NotFound("No existe una mascota con el Id especificado");
+
+            if (turnoDTO.Precio <= 0) return BadRequest("El precio debe ser mayor a 0");
+
+
+
+            turno.Disponible = false;
+            turno.IdMascota = turnoDTO.IdMascota;
+            turno.Asistio = turnoDTO.Asistio;
+            turno.Precio = turnoDTO.Precio;
 
             context.Update(turno);
             await context.SaveChangesAsync();
@@ -85,12 +109,95 @@ namespace ApiAdministracionPeluqueria.Controllers
             return NoContent();
         }
 
+
+
+
+        [HttpPut("cancelar/{id:int}")]
+        public async Task<ActionResult> CancelarReserva([FromRoute]int id)
+        {
+            var emailClaim = HttpContext.User.Claims.Where(claim=>claim.Type=="email").FirstOrDefault();
+            var email = emailClaim.Value;
+            var usuario = await userManager.FindByEmailAsync(email);
+
+
+            var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id).FirstOrDefaultAsync(turno=>turno.Id == id);
+
+            if (turno == null) return BadRequest("No existe un turno con el Id especificado");
+
+            if (turno.Disponible) return BadRequest("El turno NO estaba reservado");
+
+            turno.Disponible = true;
+            turno.Asistio = null;
+            turno.Precio = null;
+            turno.IdMascota = null;
+
+            context.Update(turno);
+            await context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+
+        [HttpPut("asistencia/{id:int}")]
+        public async Task<ActionResult> ModificarAsistencia([FromRoute] int id, [FromBody] bool asistio)
+        {
+
+            var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            var email = emailClaim.Value;
+            var usuario = await userManager.FindByEmailAsync(email);
+
+
+            var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id).FirstOrDefaultAsync(turno => turno.Id == id);
+
+            if (turno == null) return BadRequest("No existe un turno con el Id especificado");
+
+            if (turno.Disponible) return BadRequest("El turno esta disponible, por lo cual no se le puede modificar la asistencia");
+
+
+            turno.Asistio = asistio;
+
+            context.Update(turno);
+            await context.SaveChangesAsync();
+
+            return NoContent();
+
+
+        }
+
+        [HttpPut("precio/{id:int}")]
+        public async Task<ActionResult> ModificarPrecio([FromRoute] int id, [FromBody] int nuevoPrecio)
+        {
+
+            if (nuevoPrecio <= 0) return BadRequest("El precio debe ser mayor a 0");
+
+
+            var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            var email = emailClaim.Value;
+            var usuario = await userManager.FindByEmailAsync(email);
+
+
+            var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id).FirstOrDefaultAsync(turno => turno.Id == id);
+
+            if (turno == null) return BadRequest("No existe un turno con el Id especificado");
+
+
+            if (turno.Disponible) return BadRequest("El turno esta disponible, por lo cual no se le puede modificar el precio");
+
+            turno.Precio = nuevoPrecio;
+           
+
+            context.Update(turno);
+            await context.SaveChangesAsync();
+
+            return NoContent();
+
+
+        }
+
         #endregion
 
 
 
-        #region ELIMINAR TURNO
 
-        #endregion
     }
 }

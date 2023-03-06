@@ -92,6 +92,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
             var nuevaMascota = mapper.Map<Mascota>(nuevaMascotaDTO);
+            nuevaMascota.IdUsuario = usuario.Id;
 
             context.Mascotas.Add(nuevaMascota);
             await context.SaveChangesAsync();
