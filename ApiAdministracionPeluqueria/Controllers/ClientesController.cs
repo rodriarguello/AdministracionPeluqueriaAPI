@@ -110,9 +110,18 @@ namespace ApiAdministracionPeluqueria.Controllers
             bool existe = await context.Clientes.AnyAsync(cliente => cliente.Id == clienteDTO.Id);
 
             if (!existe) return NotFound();
-            
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+            var email = claimEmail.Value;
+
+            var usuario = await userManager.FindByEmailAsync(email);
+
             var cliente = mapper.Map<Cliente>(clienteDTO);
+            
+            cliente.IdUsuario = usuario.Id;
+
             context.Update(cliente);
+            
             await context.SaveChangesAsync();
 
             return NoContent();

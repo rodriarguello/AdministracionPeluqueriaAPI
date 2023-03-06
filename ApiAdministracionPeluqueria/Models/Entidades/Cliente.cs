@@ -17,12 +17,6 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         
         public string? Mail { get; set; }
 
-        
-        public int? IdMascota { get; set; }
-
-        
-        public List<Mascota> Mascota { get; set; }
-
         [Required]
         public string IdUsuario { get; set; }
 

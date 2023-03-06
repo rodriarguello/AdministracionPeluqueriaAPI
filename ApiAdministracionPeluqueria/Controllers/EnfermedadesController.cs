@@ -95,8 +95,17 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             if (!existe) return NotFound();
 
-            var enfermedad = mapper.Map<Enfermedad>(enfermedadDTO);
 
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            var email = claimEmail.Value;
+            var usuario = await userManager.FindByEmailAsync(email);
+
+
+            
+            var enfermedad = mapper.Map<Enfermedad>(enfermedadDTO);
+            enfermedad.IdUsuario = usuario.Id;
+
+            
             context.Update(enfermedad);
             await context.SaveChangesAsync();
 

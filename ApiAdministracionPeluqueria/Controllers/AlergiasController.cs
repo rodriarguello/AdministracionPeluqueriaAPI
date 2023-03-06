@@ -91,10 +91,22 @@ namespace ApiAdministracionPeluqueria.Controllers
         {
             bool existe = await context.Alergias.AnyAsync(alergia=> alergia.Id == alergiaDTO.Id);
 
-            if (!existe) return NotFound();
+            
+            if (!existe) return NotFound("No existe una alergia con el Id especificado");
 
+            
+            
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            var email = claimEmail.Value;
+            var usuario = await userManager.FindByEmailAsync(email);
+
+            
+            
             var alergia = mapper.Map<Alergia>(alergiaDTO);
+            alergia.IdUsuario = usuario.Id;
 
+            
+            
             context.Update(alergia);
             await context.SaveChangesAsync();
 

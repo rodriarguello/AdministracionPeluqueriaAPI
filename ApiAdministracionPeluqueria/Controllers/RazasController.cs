@@ -94,10 +94,19 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             if (!existe) return NotFound();
 
-            var raza = mapper.Map<Raza>(razaDTO);
-
-            context.Update(raza);
             
+            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            var email = claimEmail.Value;
+            var usuario = await userManager.FindByEmailAsync(email);
+
+
+
+            var raza = mapper.Map<Raza>(razaDTO);
+            raza.IdUsuario = usuario.Id;
+
+            
+            
+            context.Update(raza);
             await context.SaveChangesAsync();
 
             return NoContent();
