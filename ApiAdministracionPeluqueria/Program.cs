@@ -86,12 +86,15 @@ builder.Services.AddSwaggerGen(options =>
 
 
 
-
+builder.Services.AddCors(opciones=> opciones.AddPolicy("Free", politica=>politica.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 
 builder.Services.AddIdentity<Usuario, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+
+builder.Services.AddTransient<ResponseApi>();
+
 
 var app = builder.Build();
 
@@ -103,6 +106,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("Free");
 
 app.UseAuthorization();
 
