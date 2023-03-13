@@ -20,14 +20,15 @@ namespace ApiAdministracionPeluqueria.Controllers
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
         private readonly UserManager<Usuario> userManager;
+        private readonly ResponseApi responseApi;
 
         #region Constructor
-        public AlergiasController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager)
+        public AlergiasController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager, ResponseApi responseApi)
         {
             this.context = context;
             this.mapper = mapper;
             this.userManager = userManager;
-
+            this.responseApi = responseApi;
         }
 
         #endregion
@@ -37,19 +38,44 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MOSTRAR ALERGIAS
 
         [HttpGet]
-        public async Task<ActionResult<List<AlergiaDTO>>> Get()
+        public async Task<ActionResult<ResponseApi>> Get()
         {
 
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            try
+            {
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var email = claimEmail.Value;
+                var email = claimEmail.Value;
 
-            var usuario = await userManager.FindByEmailAsync(email);
+                var usuario = await userManager.FindByEmailAsync(email);
 
 
-            var alergias = await context.Alergias.Where(alergia => alergia.IdUsuario == usuario.Id).ToListAsync();
+                var alergias = await context.Alergias.Where(alergia => alergia.IdUsuario == usuario.Id).ToListAsync();
 
-            return mapper.Map<List<AlergiaDTO>>(alergias);
+
+
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = "";
+                responseApi.Data = mapper.Map<List<AlergiaDTO>>(alergias);
+
+
+
+
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+            }
+            
+
+            
+            
+
+
+
+            return responseApi;
 
         }
 
@@ -61,23 +87,40 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region INSERTAR ALERGIA
 
         [HttpPost]
-        public async Task<ActionResult<AlergiaDTO>> Post([FromBody]AlergiaCreacionDTO nuevaAlergiaDTO)
+        public async Task<ActionResult<ResponseApi>> Post([FromBody]AlergiaCreacionDTO nuevaAlergiaDTO)
         {
 
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var email = claimEmail.Value;
 
-            var usuario = await userManager.FindByEmailAsync(email);
+            try
+            {
 
-            var nuevaAlergia = mapper.Map<Alergia>(nuevaAlergiaDTO);
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            nuevaAlergia.IdUsuario = usuario.Id;
+                var email = claimEmail.Value;
 
-            context.Add(nuevaAlergia);
-            await context.SaveChangesAsync();
+                var usuario = await userManager.FindByEmailAsync(email);
 
-            return mapper.Map<AlergiaDTO>(nuevaAlergia);
+                var nuevaAlergia = mapper.Map<Alergia>(nuevaAlergiaDTO);
+
+                nuevaAlergia.IdUsuario = usuario.Id;
+
+                context.Add(nuevaAlergia);
+                await context.SaveChangesAsync();
+
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = "";
+                responseApi.Data = mapper.Map<AlergiaDTO>(nuevaAlergia);
+            }
+            catch (Exception ex)
+            {
+
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+            }
+
+            return responseApi;
         }
 
         #endregion
@@ -87,31 +130,54 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MODIFICAR ALERGIA
 
         [HttpPut]
-        public async Task<ActionResult> Put([FromBody] AlergiaDTO alergiaDTO)
+        public async Task<ActionResult<ResponseApi>> Put([FromBody] AlergiaDTO alergiaDTO)
         {
-            bool existe = await context.Alergias.AnyAsync(alergia=> alergia.Id == alergiaDTO.Id);
-
-            
-            if (!existe) return NotFound("No existe una alergia con el Id especificado");
-
-            
-            
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-            var email = claimEmail.Value;
-            var usuario = await userManager.FindByEmailAsync(email);
-
-            
-            
-            var alergia = mapper.Map<Alergia>(alergiaDTO);
-            alergia.IdUsuario = usuario.Id;
-
-            
-            
-            context.Update(alergia);
-            await context.SaveChangesAsync();
+            try
+            {
+                bool existe = await context.Alergias.AnyAsync(alergia=> alergia.Id == alergiaDTO.Id);
 
 
-            return NoContent();
+                if (!existe)
+                {
+
+                    responseApi.Resultado = 0;
+                    responseApi.Mensaje = "No existe una alergia con el Id especificado";
+                    responseApi.Data = null;
+
+
+                    return NotFound(responseApi);
+
+                }
+            
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = claimEmail.Value;
+                var usuario = await userManager.FindByEmailAsync(email);
+
+            
+            
+                var alergia = mapper.Map<Alergia>(alergiaDTO);
+                alergia.IdUsuario = usuario.Id;
+
+            
+            
+                context.Update(alergia);
+                await context.SaveChangesAsync();
+
+
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = "Se actualizo correctamente";
+                responseApi.Data = null;
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+
+            }
+
+
+            return responseApi;
         }
 
         #endregion
@@ -120,18 +186,41 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region ELIMINAR ALERGIA
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete([FromRoute]int id)
+        public async Task<ActionResult<ResponseApi>> Delete([FromRoute]int id)
         {
-            bool existe = await context.Alergias.AnyAsync(alergia => alergia.Id == id);
 
-            if(!existe) return NotFound();
+            try
+            {
+                bool existe = await context.Alergias.AnyAsync(alergia => alergia.Id == id);
 
-            var alergia = await context.Alergias.FirstOrDefaultAsync(alergia => alergia.Id == id);
+                if (!existe)
+                {
+                    responseApi.Resultado = 0;
+                    responseApi.Mensaje = "No existe una alergia con el Id especificado";
+                    responseApi.Data = null;
 
-            context.Remove(alergia);
-            await context.SaveChangesAsync();
+                    return NotFound(responseApi);
+                }        
+                
+                var alergia = await context.Alergias.FirstOrDefaultAsync(alergia => alergia.Id == id);
 
-            return NoContent();
+                context.Remove(alergia);
+                await context.SaveChangesAsync();
+
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = "";
+                responseApi.Data = null;
+
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+
+            }
+
+            return responseApi;
         }
 
         #endregion
