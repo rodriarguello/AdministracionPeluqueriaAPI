@@ -20,13 +20,15 @@ namespace ApiAdministracionPeluqueria.Controllers
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
         private readonly UserManager<Usuario> userManager;
+        private readonly ResponseApi responseApi;
 
         #region Constructor
-        public EnfermedadesController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager)
+        public EnfermedadesController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager, ResponseApi responseApi)
         {
             this.context = context;
             this.mapper = mapper;
             this.userManager = userManager;
+            this.responseApi = responseApi;
         }
 
         #endregion
@@ -36,21 +38,36 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MOSTRAR ENFERMEDADES
 
         [HttpGet]
-        public async Task<ActionResult<List<EnfermedadDTO>>> Get()
+        public async Task<ActionResult<ResponseApi>> Get()
         {
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var email = claimEmail.Value;
+            try
+            {
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var usuario = await userManager.FindByEmailAsync(email);
+                var email = claimEmail.Value;
+
+                var usuario = await userManager.FindByEmailAsync(email);
 
 
-            var enfermedades = await context.Enfermedades.Where(enfermedad => enfermedad.IdUsuario == usuario.Id).ToListAsync();
+                var enfermedades = await context.Enfermedades.Where(enfermedad => enfermedad.IdUsuario == usuario.Id).ToListAsync();
 
-            
-            
 
-            return mapper.Map<List<EnfermedadDTO>>(enfermedades);
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data = mapper.Map<List<EnfermedadDTO>>(enfermedades) ;
+
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+            }
+
+
+
+            return responseApi;
 
         }
 
@@ -62,24 +79,40 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region INSERTAR ENFERMEDAD
 
         [HttpPost]
-        public async Task<ActionResult<EnfermedadDTO>> Post([FromBody] EnfermedadCreacionDTO nuevaEnfermedadDTO)
+        public async Task<ActionResult<ResponseApi>> Post([FromBody] EnfermedadCreacionDTO nuevaEnfermedadDTO)
         {
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var email = claimEmail.Value;
+            try
+            {
+            
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var usuario = await userManager.FindByEmailAsync(email);
+                var email = claimEmail.Value;
 
-            var nuevaEnfermedad = mapper.Map<Enfermedad>(nuevaEnfermedadDTO);
+                var usuario = await userManager.FindByEmailAsync(email);
 
-            nuevaEnfermedad.IdUsuario = usuario.Id;
+                var nuevaEnfermedad = mapper.Map<Enfermedad>(nuevaEnfermedadDTO);
+
+                nuevaEnfermedad.IdUsuario = usuario.Id;
 
             
-            context.Add(nuevaEnfermedad);
+                context.Add(nuevaEnfermedad);
             
-            await context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
-            return mapper.Map<EnfermedadDTO>(nuevaEnfermedad);
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data = mapper.Map<EnfermedadDTO>(nuevaEnfermedad);
+
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+            }
+
+            return responseApi;
         }
 
         #endregion
@@ -89,28 +122,51 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MODIFICAR ENFERMEDAD
 
         [HttpPut]
-        public async Task<ActionResult> Put([FromBody] EnfermedadDTO enfermedadDTO)
+        public async Task<ActionResult<ResponseApi>> Put([FromBody] EnfermedadDTO enfermedadDTO)
         {
-            bool existe = await context.Enfermedades.AnyAsync(enfermedad => enfermedad.Id == enfermedadDTO.Id);
 
-            if (!existe) return NotFound();
+            try
+            {
+
+                bool existe = await context.Enfermedades.AnyAsync(enfermedad => enfermedad.Id == enfermedadDTO.Id);
+
+                if (!existe){
+
+                    responseApi.Resultado = 0;
+                    responseApi.Mensaje = "No existe una enfermedad con el Id especificado";
+                    responseApi.Data = null;
+
+                    return NotFound(responseApi); 
+                }
 
 
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-            var email = claimEmail.Value;
-            var usuario = await userManager.FindByEmailAsync(email);
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = claimEmail.Value;
+                var usuario = await userManager.FindByEmailAsync(email);
 
 
             
-            var enfermedad = mapper.Map<Enfermedad>(enfermedadDTO);
-            enfermedad.IdUsuario = usuario.Id;
+                var enfermedad = mapper.Map<Enfermedad>(enfermedadDTO);
+                enfermedad.IdUsuario = usuario.Id;
 
             
-            context.Update(enfermedad);
-            await context.SaveChangesAsync();
+                context.Update(enfermedad);
+                await context.SaveChangesAsync();
+
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data = null;
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+            }
 
 
-            return NoContent();
+
+            return responseApi;
         }
 
         #endregion
@@ -119,18 +175,45 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region ELIMINAR ENFERMEDAD
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete([FromRoute] int id)
+        public async Task<ActionResult<ResponseApi>> Delete([FromRoute] int id)
         {
-            bool existe = await context.Enfermedades.AnyAsync(enfermedad => enfermedad.Id == id);
 
-            if (!existe) return NotFound();
 
-            var enfermedad = await context.Enfermedades.FirstOrDefaultAsync(enfermedad => enfermedad.Id == id);
+            try
+            {
 
-            context.Remove(enfermedad);
-            await context.SaveChangesAsync();
+                bool existe = await context.Enfermedades.AnyAsync(enfermedad => enfermedad.Id == id);
 
-            return NoContent();
+                if (!existe)
+                {
+                    responseApi.Resultado = 0;
+                    responseApi.Mensaje = "No existe una enfermedad con el Id especificado";
+                    responseApi.Data = null;
+
+                    return NotFound(responseApi);
+
+                }
+                    
+                var enfermedad = await context.Enfermedades.FirstOrDefaultAsync(enfermedad => enfermedad.Id == id);
+
+                context.Remove(enfermedad);
+                await context.SaveChangesAsync();
+
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data = null;
+
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+
+            }
+
+
+            return responseApi;
         }
 
         #endregion
