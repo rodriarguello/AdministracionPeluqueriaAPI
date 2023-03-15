@@ -20,14 +20,16 @@ namespace ApiAdministracionPeluqueria.Controllers
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
         private readonly UserManager<Usuario> userManager;
+        private readonly ResponseApi responseApi;
 
 
         #region Constructor
-        public ClientesController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager)
+        public ClientesController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager, ResponseApi responseApi)
         {
             this.context = context;
             this.mapper = mapper;
             this.userManager = userManager;
+            this.responseApi = responseApi;
         }
         #endregion
 
@@ -36,18 +38,31 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MOSTRAR CLIENTES
 
         [HttpGet]
-        public async Task<ActionResult<List<ClienteDTO>>> Get()
+        public async Task<ActionResult<ResponseApi>> Get()
         {
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            try
+            {
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var email = claimEmail.Value;
+                var email = claimEmail.Value;
 
-            var usuario = await userManager.FindByEmailAsync(email);
+                var usuario = await userManager.FindByEmailAsync(email);
 
-            var clientes = await context.Clientes.Where(cliente=> cliente.IdUsuario == usuario.Id).ToListAsync();
+                var clientes = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id).ToListAsync();
 
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data= mapper.Map<List<ClienteDTO>>(clientes);
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado=0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+                
+            }
 
-            return mapper.Map<List<ClienteDTO>>(clientes);
+            return responseApi;
         }
 
         [HttpGet("{id:int}")]
@@ -77,24 +92,40 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region INSERTAR CLIENTE
 
         [HttpPost]
-        public async Task<ActionResult<ClienteDTO>> Post([FromBody]ClienteCreacionDTO nuevoClienteDTO)
+        public async Task<ActionResult<ResponseApi>> Post([FromBody]ClienteCreacionDTO nuevoClienteDTO)
         {
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var email = claimEmail.Value;
+            try
+            {
 
-            var usuario = await userManager.FindByEmailAsync(email);
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var nuevoCliente = mapper.Map<Cliente>(nuevoClienteDTO);
+                var email = claimEmail.Value;
 
-            nuevoCliente.IdUsuario = usuario.Id;
-            context.Add(nuevoCliente);
+                var usuario = await userManager.FindByEmailAsync(email);
+
+                var nuevoCliente = mapper.Map<Cliente>(nuevoClienteDTO);
+
+                nuevoCliente.IdUsuario = usuario.Id;
+                context.Add(nuevoCliente);
 
 
-           await context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data = mapper.Map<ClienteDTO>(nuevoCliente);
 
-            return mapper.Map<ClienteDTO>(nuevoCliente);
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+                
+            }
+
+            return responseApi;
         }
 
         #endregion
@@ -104,27 +135,51 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MODIFICAR CLIENTES
 
         [HttpPut]
-        public async Task<ActionResult> Put([FromBody]ClienteDTO clienteDTO)
+        public async Task<ActionResult<ResponseApi>> Put([FromBody]ClienteDTO clienteDTO)
         {
+            try
+            {
 
-            bool existe = await context.Clientes.AnyAsync(cliente => cliente.Id == clienteDTO.Id);
+                bool existe = await context.Clientes.AnyAsync(cliente => cliente.Id == clienteDTO.Id);
 
-            if (!existe) return NotFound();
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                if (!existe)
+                {
+                    responseApi.Resultado = 0;
+                    responseApi.Mensaje = "No existe un cliente con Id especificado";
+                    responseApi.Data = null;
 
-            var email = claimEmail.Value;
+                    return responseApi;
+                }
 
-            var usuario = await userManager.FindByEmailAsync(email);
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var cliente = mapper.Map<Cliente>(clienteDTO);
+                var email = claimEmail.Value;
+
+                var usuario = await userManager.FindByEmailAsync(email);
+
+                var cliente = mapper.Map<Cliente>(clienteDTO);
             
-            cliente.IdUsuario = usuario.Id;
+                cliente.IdUsuario = usuario.Id;
 
-            context.Update(cliente);
+                context.Update(cliente);
             
-            await context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
-            return NoContent();
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data  = null;
+
+
+            }
+            catch (Exception ex)
+            {
+
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+            }
+
+            return responseApi;
         }
 
         #endregion
@@ -134,19 +189,39 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region ELIMINAR CLIENTE
 
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete([FromRoute] int id)
+        public async Task<ActionResult<ResponseApi>> Delete([FromRoute] int id)
         {
+            try
+            {
 
-            bool existe = await context.Clientes.AnyAsync(cliente => cliente.Id == id);
+                bool existe = await context.Clientes.AnyAsync(cliente => cliente.Id == id);
 
-            if (!existe) return NotFound();
+                if (!existe)
+                {
+                    responseApi.Resultado = 0;
+                    responseApi.Mensaje = "No existe un cliente con el Id especificado";
+                    responseApi.Data = null;
+                    return responseApi;
+                }
 
-            var cliente = await context.Clientes.FirstOrDefaultAsync(cliente => cliente.Id == id);
+                var cliente = await context.Clientes.FirstOrDefaultAsync(cliente => cliente.Id == id);
 
-            context.Remove(cliente);
-            await context.SaveChangesAsync();
+                context.Remove(cliente);
+                await context.SaveChangesAsync();
 
-            return Ok();
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data = null;
+
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+            }
+
+            return responseApi;
         }
 
         #endregion

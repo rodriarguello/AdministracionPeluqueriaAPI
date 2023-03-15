@@ -18,10 +18,5 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO
         public string? Mail { get; set; }
 
 
-       
-
-        
-
-
     }
 }

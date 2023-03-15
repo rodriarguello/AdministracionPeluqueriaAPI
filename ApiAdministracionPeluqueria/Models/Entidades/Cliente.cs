@@ -12,6 +12,7 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         public string Nombre { get; set; }
 
         [Required]
+        [Phone]
         public string Telefono { get; set; }
 
         
