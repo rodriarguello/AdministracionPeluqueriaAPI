@@ -145,7 +145,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                     responseApi.Data = null;
 
 
-                    return NotFound(responseApi);
+                    return responseApi;
 
                 }
             
@@ -199,7 +199,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                     responseApi.Mensaje = "No existe una alergia con el Id especificado";
                     responseApi.Data = null;
 
-                    return NotFound(responseApi);
+                    return responseApi;
                 }        
                 
                 var alergia = await context.Alergias.FirstOrDefaultAsync(alergia => alergia.Id == id);

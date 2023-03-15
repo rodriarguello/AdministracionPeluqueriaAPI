@@ -20,15 +20,17 @@ namespace ApiAdministracionPeluqueria.Controllers
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
         private readonly UserManager<Usuario> userManager;
+        private readonly ResponseApi responseApi;
 
         #region Constructor
 
 
-        public RazasController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager)
+        public RazasController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager, ResponseApi responseApi)
         {
             this.context = context;
             this.mapper = mapper;
             this.userManager = userManager;
+            this.responseApi = responseApi;
         }
 
         #endregion
@@ -37,19 +39,33 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region MOSTRAR RAZAS
         [HttpGet]
-        public async Task<ActionResult<List<RazaDTO>>> Get()
+        public async Task<ActionResult<ResponseApi>> Get()
         {
+            try
+            {
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = claimEmail.Value;
 
-            var email = claimEmail.Value;
+                var usuario = await userManager.FindByEmailAsync(email);
 
-            var usuario = await userManager.FindByEmailAsync(email);
+                var razas = await context.Razas.Where(raza => raza.IdUsuario == usuario.Id).ToListAsync();
 
-            var razas = await context.Razas.Where(raza=> raza.IdUsuario == usuario.Id).ToListAsync();
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data = mapper.Map<List<RazaDTO>>(razas);
 
-            return mapper.Map<List<RazaDTO>>(razas);
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+               
+            }
 
+            return responseApi;
+            
         }
 
         #endregion
@@ -59,25 +75,43 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<RazaDTO>> PostRaza([FromBody]RazaCreacionDTO nuevaRazaDTO)
+        public async Task<ActionResult<ResponseApi>> PostRaza([FromBody]RazaCreacionDTO nuevaRazaDTO)
         {
 
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            try
+            {
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var email = claimEmail.Value;
+                var email = claimEmail.Value;
 
-            var usuario = await userManager.FindByEmailAsync(email);
+                var usuario = await userManager.FindByEmailAsync(email);
 
-            var nuevaRaza = mapper.Map<Raza>(nuevaRazaDTO);
+                var nuevaRaza = mapper.Map<Raza>(nuevaRazaDTO);
 
-            nuevaRaza.IdUsuario = usuario.Id;
+                nuevaRaza.IdUsuario = usuario.Id;
 
 
-            context.Add(nuevaRaza);
-            
-            await context.SaveChangesAsync();
+                context.Add(nuevaRaza);
 
-            return mapper.Map<RazaDTO>(nuevaRaza);
+                await context.SaveChangesAsync();
+
+               
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data = mapper.Map<RazaDTO>(nuevaRaza);
+
+
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+
+            }
+
+
+            return responseApi;
             
         }
 
@@ -87,29 +121,58 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region MODIFICAR RAZA
         [HttpPut]
-        public async Task<ActionResult<RazaDTO>> PutRaza([FromBody] RazaDTO razaDTO)
+        public async Task<ActionResult<ResponseApi>> PutRaza([FromBody] RazaDTO razaDTO)
         {
 
-            bool existe = await context.Razas.AnyAsync(raza => raza.Id == razaDTO.Id);
-
-            if (!existe) return NotFound();
-
-            
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-            var email = claimEmail.Value;
-            var usuario = await userManager.FindByEmailAsync(email);
+            try
+            {
 
 
+                bool existe = await context.Razas.AnyAsync(raza => raza.Id == razaDTO.Id);
 
-            var raza = mapper.Map<Raza>(razaDTO);
-            raza.IdUsuario = usuario.Id;
+                if (!existe)
+                {
 
-            
-            
-            context.Update(raza);
-            await context.SaveChangesAsync();
+                    responseApi.Resultado = 0;
+                    responseApi.Mensaje = "No existe una raza con el Id especificado";
+                    responseApi.Data = null;
 
-            return NoContent();
+                    return responseApi;
+                }
+
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = claimEmail.Value;
+                var usuario = await userManager.FindByEmailAsync(email);
+
+
+
+                var raza = mapper.Map<Raza>(razaDTO);
+                raza.IdUsuario = usuario.Id;
+
+
+
+                context.Update(raza);
+                await context.SaveChangesAsync();
+
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data = null;
+
+
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+
+            }
+
+
+
+
+
+            return responseApi;
         }
 
 
@@ -119,19 +182,45 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region ELIMINAR RAZA
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult> DeleteRaza([FromRoute]int id)
+        public async Task<ActionResult<ResponseApi>> DeleteRaza([FromRoute]int id)
         {
-            bool existe = await context.Razas.AnyAsync(raza => raza.Id == id);
 
-            if (!existe) return NotFound();
 
-            var raza = await context.Razas.FirstOrDefaultAsync(raza=> raza.Id == id);
+            try
+            {
+                bool existe = await context.Razas.AnyAsync(raza => raza.Id == id);
 
-            context.Razas.Remove(raza);
+                if (!existe) {
 
-            await context.SaveChangesAsync();
+                    responseApi.Resultado = 0;
+                    responseApi.Mensaje = "No existe una raza con el Id especificado";
+                    responseApi.Data = null;
 
-            return NoContent();
+                    return responseApi;
+                }
+
+                var raza = await context.Razas.FirstOrDefaultAsync(raza => raza.Id == id);
+
+                context.Razas.Remove(raza);
+
+                await context.SaveChangesAsync();
+
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data = null;
+            }
+            catch (Exception ex)
+            {
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+
+            }
+
+
+
+
+            return responseApi;
         }
 
 

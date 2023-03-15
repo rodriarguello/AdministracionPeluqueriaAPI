@@ -136,7 +136,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                     responseApi.Mensaje = "No existe una enfermedad con el Id especificado";
                     responseApi.Data = null;
 
-                    return NotFound(responseApi); 
+                    return responseApi; 
                 }
 
 
@@ -190,7 +190,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                     responseApi.Mensaje = "No existe una enfermedad con el Id especificado";
                     responseApi.Data = null;
 
-                    return NotFound(responseApi);
+                    return responseApi;
 
                 }
                     
