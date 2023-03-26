@@ -11,8 +11,8 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO
         [Required]
         [Phone]
         public string Telefono { get; set; }
-
-        public string? Mail { get; set; }
+        [EmailAddress]
+        public string? Email { get; set; }
 
         
 

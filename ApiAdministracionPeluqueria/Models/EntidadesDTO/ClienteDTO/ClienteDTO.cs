@@ -1,4 +1,5 @@
-﻿using ApiAdministracionPeluqueria.Models.Entidades;
+﻿
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO;
 using System.ComponentModel.DataAnnotations;
 
 namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO
@@ -15,7 +16,9 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO
         public string Telefono { get; set; }
 
 
-        public string? Mail { get; set; }
+        public string? Email { get; set; }
+
+        public List<MascotaSinClienteDTO> Mascotas { get; set; }
 
 
     }
