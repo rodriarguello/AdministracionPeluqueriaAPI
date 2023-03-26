@@ -29,7 +29,6 @@ namespace ApiAdministracionPeluqueria.Controllers
             this.mapper = mapper;
             this.userManager = userManager;
             this.responseApi = responseApi;
-
         }
 
         #endregion
