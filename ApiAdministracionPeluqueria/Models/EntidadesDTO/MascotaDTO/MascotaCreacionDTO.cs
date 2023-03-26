@@ -17,21 +17,21 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO
         [Required]
         public int IdCliente { get; set; }
 
-        
-
+       
         [Required]
         public int IdRaza { get; set; }
 
        
-
         [Required]
         public int IdEnfermedad { get; set; }
 
-        
+       
 
         [Required]
         public int IdAlergia { get; set; }
 
       
+    
+
     }
 }
