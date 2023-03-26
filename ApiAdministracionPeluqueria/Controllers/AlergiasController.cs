@@ -22,6 +22,8 @@ namespace ApiAdministracionPeluqueria.Controllers
         private readonly UserManager<Usuario> userManager;
         private readonly ResponseApi responseApi;
 
+
+
         #region Constructor
         public AlergiasController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager, ResponseApi responseApi)
         {
