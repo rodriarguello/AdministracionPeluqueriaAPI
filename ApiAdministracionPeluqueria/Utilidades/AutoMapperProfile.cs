@@ -19,6 +19,7 @@ namespace ApiAdministracionPeluqueria.Utilidades
             #region CLIENTES
             CreateMap<ClienteCreacionDTO, Cliente>();
             CreateMap<Cliente, ClienteDTO>().ReverseMap();
+            CreateMap<Cliente, ClienteSinMascotasDTO>().ReverseMap();
 
             #endregion
 
@@ -50,7 +51,6 @@ namespace ApiAdministracionPeluqueria.Utilidades
             #endregion
 
 
-            // Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJvZHJpYXJndWVsbG85NkBnbWFpbC5jb20iLCJleHAiOjE2NzgyMTEzMDZ9.s3836B6o6MAqSbwfSd6d9c8mZxTOkYNYxihhjbjrLGw
             #region TURNOS
 
 
@@ -73,6 +73,7 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
             CreateMap<MascotaCreacionDTO,Mascota>();
             CreateMap<MascotaDTO, Mascota>().ReverseMap();
+            CreateMap<Mascota, MascotaSinClienteDTO>();
 
 
             #endregion
