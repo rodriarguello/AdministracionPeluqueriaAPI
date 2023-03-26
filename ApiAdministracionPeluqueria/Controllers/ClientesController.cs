@@ -48,7 +48,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var usuario = await userManager.FindByEmailAsync(email);
 
-                var clientes = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id).ToListAsync();
+                var clientes = await context.Clientes.Include(cliente=>cliente.Mascotas).Where(cliente => cliente.IdUsuario == usuario.Id).ToListAsync();
 
                 responseApi.Resultado = 1;
                 responseApi.Mensaje = null;
@@ -66,22 +66,44 @@ namespace ApiAdministracionPeluqueria.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<ClienteDTO>> GetPorId([FromRoute]int id)
+        public async Task<ActionResult<ResponseApi>> GetPorId([FromRoute]int id)
         {
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            try
+            {
 
-            var email = claimEmail.Value;
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var usuario = await userManager.FindByEmailAsync(email);
+                var email = claimEmail.Value;
 
-            var cliente = await context.Clientes.Where(cliente=>cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(x=> x.Id == id);
+                var usuario = await userManager.FindByEmailAsync(email);
 
-            if (cliente == null) return NotFound();
+                var cliente = await context.Clientes.Include(cliente=>cliente.Mascotas).Where(cliente=>cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(x=> x.Id == id);
+
+                if (cliente == null)
+                {
+                    responseApi.Resultado = 0;
+                    responseApi.Mensaje = "No existe un cliente con el id especificado";
+                    responseApi.Data = null;
+
+                    return responseApi;
+                }
 
 
+                responseApi.Resultado = 1;
+                responseApi.Mensaje = null;
+                responseApi.Data = mapper.Map<ClienteDTO>(cliente);
 
-            return mapper.Map<ClienteDTO>(cliente);
 
+            }
+            catch (Exception ex)
+            {
+
+                responseApi.Resultado = 0;
+                responseApi.Mensaje = ex.Message;
+                responseApi.Data = null;
+            }
+
+            return responseApi;
         }
 
 
@@ -139,10 +161,15 @@ namespace ApiAdministracionPeluqueria.Controllers
         {
             try
             {
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-                bool existe = await context.Clientes.AnyAsync(cliente => cliente.Id == clienteDTO.Id);
+                var email = claimEmail.Value;
 
-                if (!existe)
+                var usuario = await userManager.FindByEmailAsync(email);
+
+                var cliente = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(cliente => cliente.Id == clienteDTO.Id);
+
+                if (cliente == null)
                 {
                     responseApi.Resultado = 0;
                     responseApi.Mensaje = "No existe un cliente con Id especificado";
@@ -151,15 +178,10 @@ namespace ApiAdministracionPeluqueria.Controllers
                     return responseApi;
                 }
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+               
 
-                var email = claimEmail.Value;
-
-                var usuario = await userManager.FindByEmailAsync(email);
-
-                var cliente = mapper.Map<Cliente>(clienteDTO);
+                cliente = mapper.Map<Cliente>(clienteDTO);
             
-                cliente.IdUsuario = usuario.Id;
 
                 context.Update(cliente);
             
@@ -193,10 +215,15 @@ namespace ApiAdministracionPeluqueria.Controllers
         {
             try
             {
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-                bool existe = await context.Clientes.AnyAsync(cliente => cliente.Id == id);
+                var email = claimEmail.Value;
 
-                if (!existe)
+                var usuario = await userManager.FindByEmailAsync(email);
+
+                var cliente = await context.Clientes.Where(cliente=>cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(cliente => cliente.Id == id);
+
+                if (cliente==null)
                 {
                     responseApi.Resultado = 0;
                     responseApi.Mensaje = "No existe un cliente con el Id especificado";
@@ -204,7 +231,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                     return responseApi;
                 }
 
-                var cliente = await context.Clientes.FirstOrDefaultAsync(cliente => cliente.Id == id);
+                
 
                 context.Remove(cliente);
                 await context.SaveChangesAsync();
