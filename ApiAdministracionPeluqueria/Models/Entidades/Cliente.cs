@@ -15,13 +15,13 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         [Phone]
         public string Telefono { get; set; }
 
-        
-        public string? Mail { get; set; }
+        [EmailAddress]
+        public string? Email { get; set; }
 
         [Required]
         public string IdUsuario { get; set; }
 
-        public Usuario Usuario { get; set; }
+        public List<Mascota>? Mascotas { get; set; } 
 
     }
 }

@@ -14,7 +14,7 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         [Required]
         public string IdUsuario { get; set; }
 
-        public Usuario Usuario { get; set; }
+        
 
 
     }

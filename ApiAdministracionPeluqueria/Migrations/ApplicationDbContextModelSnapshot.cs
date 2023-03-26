@@ -34,16 +34,11 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("MascotaId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MascotaId");
 
                     b.ToTable("Alergias");
                 });
@@ -97,11 +92,11 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("IdUsuario")
-                        .IsRequired()
+                    b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Mail")
+                    b.Property<string>("IdUsuario")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Nombre")
@@ -112,12 +107,7 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UsuarioId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Clientes");
                 });
@@ -134,21 +124,11 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("MascotaId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UsuarioId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("MascotaId");
-
-                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Enfermedades");
                 });
@@ -199,7 +179,13 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AlergiaId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("ClienteId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("EnfermedadId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("FechaNacimiento")
@@ -233,7 +219,11 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AlergiaId");
+
                     b.HasIndex("ClienteId");
+
+                    b.HasIndex("EnfermedadId");
 
                     b.HasIndex("RazaId");
 
@@ -256,12 +246,7 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UsuarioId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Razas");
                 });
@@ -280,10 +265,10 @@ namespace ApiAdministracionPeluqueria.Migrations
                     b.Property<bool>("Disponible")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("FechaId")
+                    b.Property<int>("FechaId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("HorarioId")
+                    b.Property<int>("HorarioId")
                         .HasColumnType("int");
 
                     b.Property<int>("IdCalendario")
@@ -529,13 +514,6 @@ namespace ApiAdministracionPeluqueria.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Alergia", b =>
-                {
-                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Mascota", null)
-                        .WithMany("Alergia")
-                        .HasForeignKey("MascotaId");
-                });
-
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Calendario", b =>
                 {
                     b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Usuario", "Usuario")
@@ -545,61 +523,46 @@ namespace ApiAdministracionPeluqueria.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Cliente", b =>
-                {
-                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Usuario", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId");
-
-                    b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Enfermedad", b =>
-                {
-                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Mascota", null)
-                        .WithMany("Enfermedad")
-                        .HasForeignKey("MascotaId");
-
-                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Usuario", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId");
-
-                    b.Navigation("Usuario");
-                });
-
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Mascota", b =>
                 {
-                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Cliente", "Cliente")
+                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Alergia", "Alergia")
                         .WithMany()
+                        .HasForeignKey("AlergiaId");
+
+                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Cliente", "Cliente")
+                        .WithMany("Mascotas")
                         .HasForeignKey("ClienteId");
+
+                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Enfermedad", "Enfermedad")
+                        .WithMany()
+                        .HasForeignKey("EnfermedadId");
 
                     b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Raza", "Raza")
                         .WithMany()
                         .HasForeignKey("RazaId");
 
+                    b.Navigation("Alergia");
+
                     b.Navigation("Cliente");
 
+                    b.Navigation("Enfermedad");
+
                     b.Navigation("Raza");
-                });
-
-            modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Raza", b =>
-                {
-                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Usuario", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId");
-
-                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Turno", b =>
                 {
                     b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Fecha", "Fecha")
                         .WithMany()
-                        .HasForeignKey("FechaId");
+                        .HasForeignKey("FechaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Horario", "Horario")
                         .WithMany()
-                        .HasForeignKey("HorarioId");
+                        .HasForeignKey("HorarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Mascota", "Mascota")
                         .WithMany("Turno")
@@ -663,12 +626,13 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Cliente", b =>
+                {
+                    b.Navigation("Mascotas");
+                });
+
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Mascota", b =>
                 {
-                    b.Navigation("Alergia");
-
-                    b.Navigation("Enfermedad");
-
                     b.Navigation("Turno");
                 });
 #pragma warning restore 612, 618
