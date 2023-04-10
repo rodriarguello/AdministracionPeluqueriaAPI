@@ -1,15 +1,14 @@
 ﻿using ApiAdministracionPeluqueria.Models;
 using ApiAdministracionPeluqueria.Models.Entidades;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.CalendarioDTO;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.FechaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace ApiAdministracionPeluqueria.Controllers
 {
@@ -21,48 +20,109 @@ namespace ApiAdministracionPeluqueria.Controllers
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
         private readonly UserManager<Usuario> userManager;
+        private readonly ResponseApi responseApi;
 
         #region Constructor
-        public TurnosController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager)
+        public TurnosController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager, ResponseApi responseApi)
         {
             this.context = context;
             this.mapper = mapper;
             this.userManager = userManager;
+            this.responseApi = responseApi;
         }
 
 
         #endregion
 
+        
 
         #region MOSTRAR TURNOS
 
         [HttpGet("{calendarioId:int}")]
 
-        public async Task<ActionResult<List<TurnoDTO>>> Get(int calendarioId)
+        public async Task<ActionResult<ModeloRespuesta>> Get(int calendarioId)
         {
+            try
+            {
+                var existeCalendario = await context.Calendarios.AnyAsync(calendario => calendario.Id == calendarioId);
 
-            var existeCalendario = await context.Calendarios.AnyAsync(calendario => calendario.Id == calendarioId);
-
-            if (!existeCalendario) return BadRequest("No existe un calendario con el Id especificado");
+                if (!existeCalendario) return responseApi.respuestaError("No existe un calendario con el Id especificado");
             
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-            var email = claimEmail.Value;
+                var email = claimEmail.Value;
 
-            var usuario = await userManager.FindByEmailAsync(email);
+                var usuario = await userManager.FindByEmailAsync(email);
 
-            var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).
-                FirstOrDefaultAsync(calendario=>calendario.Id == calendarioId);
+                var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).
+                    FirstOrDefaultAsync(calendario=>calendario.Id == calendarioId);
+
+                if (calendario==null) return responseApi.respuestaError("No existe un calendario con el Id especificado para este usuario");
+
+                var turnos = await context.Turnos.Where(turnos => turnos.IdCalendario == calendarioId)
+                    .Include(turnos=> turnos.Fecha)
+                    .Include(turnos=>turnos.Horario)
+                    .Include(turnos=>turnos.Mascota)
+                    .ToListAsync();
+
+                 
 
 
-            if (calendario==null) return BadRequest("No existe un calendario con el Id especificado para este usuario");
+                return responseApi.respuestaExitosa(mapper.Map<List<TurnoDTO>>(turnos));
 
 
-            var turnos = await context.Turnos.Where(turnos => turnos.IdCalendario == calendarioId).ToListAsync();
-            
+            }
+            catch (Exception ex)
+            {
+                return responseApi.respuestaError(ex.Message);
+            }
 
-            return mapper.Map<List<TurnoDTO>>(turnos);
-            
+        }
+
+
+        [HttpGet("filtrar/{calendarioId:int},{fechaInicio},{fechaFin}")]
+
+        public async Task<ActionResult<ModeloRespuesta>> FiltrarPorFechas([FromRoute] int calendarioId, DateTime fechaInicio,DateTime fechaFin)
+        {
+            try
+            {
+                var existeCalendario = await context.Calendarios.AnyAsync(calendario => calendario.Id == calendarioId);
+
+                if (!existeCalendario) return responseApi.respuestaError("No existe un calendario con el Id especificado");
+
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+                var email = claimEmail.Value;
+
+                var usuario = await userManager.FindByEmailAsync(email);
+
+                var nuevaFechaInicio = new DateTime(fechaInicio.Year,fechaInicio.Month,fechaInicio.Day,0,0,0);
+                var nuevaFechaFin = new DateTime(fechaFin.Year, fechaFin.Month, fechaFin.Day, 23, 59, 59);
+
+                var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).
+                    FirstOrDefaultAsync(calendario => calendario.Id == calendarioId);
+
+                if (calendario == null) return responseApi.respuestaError("No existe un calendario con el Id especificado para este usuario");
+
+                var turnos = await context.Turnos.Where(turnos => turnos.IdCalendario == calendarioId)
+                    .Include(turnos => turnos.Fecha)
+                    .Include(turnos => turnos.Horario)
+                    .Include(turnos => turnos.Mascota)
+                    .Where(turnos=> turnos.Fecha.Dia>=nuevaFechaInicio && turnos.Fecha.Dia <=nuevaFechaFin)
+                    .ToListAsync();
+
+
+
+
+                return responseApi.respuestaExitosa(mapper.Map<List<TurnoDTO>>(turnos));
+
+
+            }
+            catch (Exception ex)
+            {
+                return responseApi.respuestaError(ex.Message);
+            }
+
         }
 
         #endregion
@@ -72,124 +132,186 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
         [HttpPut("reservar/{id:int}")]
-        public async Task<ActionResult> ReservarTurno([FromRoute] int id , [FromBody] TurnoModificarDTO turnoDTO)
+        public async Task<ActionResult<ModeloRespuesta>> ReservarTurno([FromRoute] int id , [FromBody] TurnoModificarDTO turnoDTO)
         {
+            try
+            {
+                
+               
             
-            
-            if (turnoDTO.Asistio) return BadRequest("Al reservar un turno no se puede enviar TRUE en el campo asistio");
-            
-            var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-            var email = emailClaim.Value;
-            var usuario = await userManager.FindByEmailAsync(email);
+                var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = emailClaim.Value;
+                var usuario = await userManager.FindByEmailAsync(email);
 
 
 
-            var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id).FirstOrDefaultAsync(turno => turno.Id == id);
+                var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
+                    .Include(turno=>turno.Fecha)
+                    .Include(turno=>turno.Horario)
+                    .Include(turno=>turno.Mascota)
+                    .FirstOrDefaultAsync(turno => turno.Id == id);
 
-            if (turno == null) return NotFound("No existe el turno con el Id especificado");
+                if (turno == null) return responseApi.respuestaError("No existe el turno con el Id especificado");
 
-            if (!turno.Disponible) return BadRequest("El turno no esta disponible");
+                if (!turno.Disponible) return responseApi.respuestaError("El turno no esta disponible");
 
-            var existeMascota = await context.Mascotas.Where(mascota => mascota.IdUsuario == usuario.Id).AnyAsync(mascota => mascota.Id == turnoDTO.IdMascota);
+                var mascota = await context.Mascotas.Where(mascota => mascota.IdUsuario == usuario.Id)
+                    .FirstOrDefaultAsync(mascota => mascota.Id == turnoDTO.IdMascota);
 
-            if(!existeMascota) return NotFound("No existe una mascota con el Id especificado");
+                if(mascota == null) return responseApi.respuestaError("No existe una mascota con el Id especificado");
 
-            if (turnoDTO.Precio <= 0) return BadRequest("El precio debe ser mayor a 0");
+                if (turnoDTO.Precio <= 0) return responseApi.respuestaError("El precio debe ser mayor a 0");
 
 
 
-            turno.Disponible = false;
-            turno.IdMascota = turnoDTO.IdMascota;
-            turno.Asistio = turnoDTO.Asistio;
-            turno.Precio = turnoDTO.Precio;
+                turno.Disponible = false;
+                turno.IdMascota = turnoDTO.IdMascota;
+                turno.Mascota = mascota;
+                turno.Asistio = false;
+                turno.Precio = turnoDTO.Precio;
+                
+                
+                await context.SaveChangesAsync();
 
-            context.Update(turno);
-            await context.SaveChangesAsync();
 
-            return NoContent();
+                return responseApi.respuestaExitosa();
+            }
+            catch (Exception ex)
+            {
+                return responseApi.respuestaError(ex.Message);
+                
+            }
         }
 
 
 
 
         [HttpPut("cancelar/{id:int}")]
-        public async Task<ActionResult> CancelarReserva([FromRoute]int id)
+        public async Task<ActionResult<ModeloRespuesta>> CancelarReserva([FromRoute]int id)
         {
-            var emailClaim = HttpContext.User.Claims.Where(claim=>claim.Type=="email").FirstOrDefault();
-            var email = emailClaim.Value;
-            var usuario = await userManager.FindByEmailAsync(email);
+
+            try
+            {
+
+                var emailClaim = HttpContext.User.Claims.Where(claim=>claim.Type=="email").FirstOrDefault();
+                var email = emailClaim.Value;
+                var usuario = await userManager.FindByEmailAsync(email);
 
 
-            var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id).FirstOrDefaultAsync(turno=>turno.Id == id);
+                var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
+                    .Include(turno=>turno.Fecha)
+                    .Include(turno=>turno.Horario)
+                    .Include(turno=>turno.Mascota)
+                    .FirstOrDefaultAsync(turno=>turno.Id == id);
 
-            if (turno == null) return BadRequest("No existe un turno con el Id especificado");
+                if (turno == null) return responseApi.respuestaError("No existe un turno con el Id especificado");
 
-            if (turno.Disponible) return BadRequest("El turno NO estaba reservado");
+                if (turno.Disponible) return responseApi.respuestaError("El turno NO estaba reservado");
 
-            turno.Disponible = true;
-            turno.Asistio = null;
-            turno.Precio = null;
-            turno.IdMascota = null;
+                turno.Disponible = true;
+                turno.Asistio = null;
+                turno.Precio = null;
+                turno.IdMascota = null;
+                turno.Mascota = null;
 
-            context.Update(turno);
-            await context.SaveChangesAsync();
 
-            return NoContent();
+                
+                await context.SaveChangesAsync();
+
+
+                return responseApi.respuestaExitosa();
+
+            }
+            catch (Exception ex)
+            {
+
+                return responseApi.respuestaError(ex.Message);
+            }
         }
 
 
         [HttpPut("asistencia/{id:int}")]
-        public async Task<ActionResult> ModificarAsistencia([FromRoute] int id, [FromBody] bool asistio)
+        public async Task<ActionResult<ModeloRespuesta>> ModificarAsistencia([FromRoute] int id, [FromBody] bool asistio)
         {
 
-            var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-            var email = emailClaim.Value;
-            var usuario = await userManager.FindByEmailAsync(email);
+            try
+            {
+                var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = emailClaim.Value;
+                var usuario = await userManager.FindByEmailAsync(email);
 
 
-            var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id).FirstOrDefaultAsync(turno => turno.Id == id);
+                var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
+                    .Include(turno=>turno.Fecha)
+                    .Include(turno=>turno.Horario)
+                    .Include(turno=>turno.Mascota)
+                    .FirstOrDefaultAsync(turno => turno.Id == id);
 
-            if (turno == null) return BadRequest("No existe un turno con el Id especificado");
+                if (turno == null) return responseApi.respuestaError("No existe un turno con el Id especificado");
 
-            if (turno.Disponible) return BadRequest("El turno esta disponible, por lo cual no se le puede modificar la asistencia");
+                if (turno.Disponible) return responseApi.respuestaError("El turno esta disponible, por lo cual no se le puede modificar la asistencia");
+
+                if (turno.Asistio == asistio) return responseApi.respuestaError("El turno ya se encuentra con ese estado de asistencia");
+
+                turno.Asistio = asistio;
+
+                
+                await context.SaveChangesAsync();
 
 
-            turno.Asistio = asistio;
+                return responseApi.respuestaExitosa();
 
-            context.Update(turno);
-            await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return responseApi.respuestaError(ex.Message);
+            }
 
-            return NoContent();
 
 
         }
 
         [HttpPut("precio/{id:int}")]
-        public async Task<ActionResult> ModificarPrecio([FromRoute] int id, [FromBody] int nuevoPrecio)
+        public async Task<ActionResult<ModeloRespuesta>> ModificarPrecio([FromRoute] int id, [FromBody] int nuevoPrecio)
         {
 
-            if (nuevoPrecio <= 0) return BadRequest("El precio debe ser mayor a 0");
+
+            try
+            {
+
+                if (nuevoPrecio <= 0) return responseApi.respuestaError("El precio debe ser mayor a 0");
 
 
-            var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-            var email = emailClaim.Value;
-            var usuario = await userManager.FindByEmailAsync(email);
+                var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = emailClaim.Value;
+                var usuario = await userManager.FindByEmailAsync(email);
 
 
-            var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id).FirstOrDefaultAsync(turno => turno.Id == id);
+                var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
+                    .Include(turno=>turno.Fecha)
+                    .Include(turno=>turno.Horario)
+                    .Include(turno=>turno.Mascota)
+                    .FirstOrDefaultAsync(turno => turno.Id == id);
 
-            if (turno == null) return BadRequest("No existe un turno con el Id especificado");
+                if (turno == null) return responseApi.respuestaError("No existe un turno con el Id especificado");
 
 
-            if (turno.Disponible) return BadRequest("El turno esta disponible, por lo cual no se le puede modificar el precio");
+                if (turno.Disponible) return responseApi.respuestaError("El turno esta disponible, por lo cual no se le puede modificar el precio");
 
-            turno.Precio = nuevoPrecio;
+                turno.Precio = nuevoPrecio;
            
 
-            context.Update(turno);
-            await context.SaveChangesAsync();
+                
+                await context.SaveChangesAsync();
 
-            return NoContent();
+                return responseApi.respuestaExitosa();
+
+
+            }
+            catch (Exception ex)
+            {
+                return responseApi.respuestaError(ex.Message);
+            }
 
 
         }

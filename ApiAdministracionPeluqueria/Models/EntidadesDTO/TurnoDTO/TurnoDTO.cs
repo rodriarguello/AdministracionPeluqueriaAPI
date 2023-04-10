@@ -1,4 +1,6 @@
 ﻿using ApiAdministracionPeluqueria.Models.Entidades;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.FechaDTO;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.HorarioDTO;
 using System.ComponentModel.DataAnnotations;
 
 namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO
@@ -7,23 +9,16 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO
     {
         [Required]
         public int Id { get; set; }
-        [Required]
-        public int IdFecha { get; set; }
+        
+        public FechaSinCalendarioDTO Fecha { get; set; }
 
-        public Fecha? Fecha { get; set; }
-
-        [Required]
-        public int IdHorario { get; set; }
-
-        public Horario? Horario { get; set; }
+        
+        public HorarioSinCalendarioDTO Horario { get; set; }
 
         [Required]
         public bool Disponible { get; set; }
 
-
-        public int? IdMascota { get; set; }
-
-        //public Mascota? Mascota { get; set; }
+        public MascotaDTO.MascotaSinClienteDTO? Mascota { get; set; }
 
         public bool? Asistio { get; set; }
 
