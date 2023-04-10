@@ -2,12 +2,26 @@
 {
     public class ResponseApi
     {
-        public int Resultado { get; set; }
-
-        public string Mensaje { get; set; }
-
-        public object Data { get; set; }
+        
 
 
+        public ModeloRespuesta respuestaExitosa( object data = null)
+        {
+
+
+            var respuesta = new ModeloRespuesta(1, null, data);
+
+            return respuesta;
+
+        }
+
+        public ModeloRespuesta respuestaError(string mensaje) { 
+        
+            
+            var respuesta = new ModeloRespuesta(0,mensaje,null);
+
+            return respuesta;
+
+        }
     }
 }

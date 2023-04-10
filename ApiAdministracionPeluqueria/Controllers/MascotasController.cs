@@ -4,7 +4,6 @@ using ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +33,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MOSTRAR MASCOTAS
 
         [HttpGet]
-        public async Task<ActionResult<ResponseApi>> MostrarMascotas()
+        public async Task<ActionResult<ModeloRespuesta>> MostrarMascotas()
         {
 
             try
@@ -55,22 +54,16 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 
               
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data = mapper.Map<List<MascotaDTO>>(mascotas);
+                return responseApi.respuestaExitosa(mapper.Map<List<MascotaSinCliente>>(mascotas));
 
 
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+                return responseApi.respuestaError(ex.Message);
 
 
             }
-
-            return responseApi;
 
         }
 
@@ -78,7 +71,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<ResponseApi>> MostrarUnaMascota([FromRoute]int id)
+        public async Task<ActionResult<ModeloRespuesta>> MostrarUnaMascota([FromRoute]int id)
         {
             try
             {
@@ -96,28 +89,17 @@ namespace ApiAdministracionPeluqueria.Controllers
                     .Include(mascota=>mascota.Raza)
                     .Where(mascotas => mascotas.Id == id).FirstOrDefaultAsync();
 
-                if(mascota == null)
-                {
-                    responseApi.Resultado = 0;
-                    responseApi.Mensaje = "No existe una mascota con el Id especificado";
-                    responseApi.Data = null;
-
-                    return responseApi;
-                }
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data = mapper.Map<MascotaDTO>(mascota);
+                if(mascota == null) return responseApi.respuestaError("No existe una mascota con el Id especificado");
+                
+                return responseApi.respuestaExitosa(mapper.Map<MascotaSinCliente>(mascota));
 
             }
             catch (Exception ex)
             {
 
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+                return  responseApi.respuestaError(ex.Message);
             }
 
-            return responseApi;
             
         }
 
@@ -128,7 +110,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region INSERTAR MASCOTA
 
         [HttpPost]
-        public async Task<ActionResult<ResponseApi>> Post([FromBody]MascotaCreacionDTO nuevaMascotaDTO)
+        public async Task<ActionResult<ModeloRespuesta>> Post([FromBody]MascotaCreacionDTO nuevaMascotaDTO)
         {
 
             try
@@ -141,20 +123,20 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var cliente = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(cliente => cliente.Id == nuevaMascotaDTO.IdCliente);
 
-                if (cliente == null) return BadRequest("No existe un Cliente con el Id especificado");
+                if (cliente == null) return responseApi.respuestaError("No existe un Cliente con el Id especificado");
 
                 var raza = await context.Razas.Where(razas => razas.IdUsuario == usuario.Id).FirstOrDefaultAsync(razas => razas.Id == nuevaMascotaDTO.IdRaza);
 
-                if (raza==null) return BadRequest("No existe una Raza con el Id especificado");
+                if (raza==null) return responseApi.respuestaError("No existe una Raza con el Id especificado");
 
                 var enfermedad = await context.Enfermedades.Where(enfermedad => enfermedad.IdUsuario == usuario.Id).FirstOrDefaultAsync(enfermedad => enfermedad.Id == nuevaMascotaDTO.IdEnfermedad);
 
-                if (enfermedad == null) return BadRequest("No existe una Enfermedad con el Id especificado");
+                if (enfermedad == null) return responseApi.respuestaError("No existe una Enfermedad con el Id especificado");
 
 
                 var alergia = await context.Alergias.Where(alergias => alergias.IdUsuario == usuario.Id).FirstOrDefaultAsync(alergias => alergias.Id == nuevaMascotaDTO.IdAlergia);
 
-                if (alergia==null) return BadRequest("No existe una Alergia con el Id especificado");
+                if (alergia==null) return responseApi.respuestaError("No existe una Alergia con el Id especificado");
 
                 var nuevaMascota = mapper.Map<Mascota>(nuevaMascotaDTO);
                 nuevaMascota.Cliente = cliente;
@@ -170,22 +152,14 @@ namespace ApiAdministracionPeluqueria.Controllers
                 context.Mascotas.Add(nuevaMascota);
                 await context.SaveChangesAsync();
 
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data = mapper.Map<MascotaDTO>(nuevaMascota);
-
+                return responseApi.respuestaExitosa();
 
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+                return responseApi.respuestaError(ex.Message);
             }
 
-
-
-            return responseApi;
 
         }
 
@@ -195,7 +169,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MODIFICAR MASCOTA
 
         [HttpPut]
-        public async Task<ActionResult<ResponseApi>> ModificarMascota([FromBody]MascotaDTO mascotaDTO)
+        public async Task<ActionResult<ModeloRespuesta>> ModificarMascota([FromBody]MascotaSinCliente mascotaDTO)
         {
             try
             {
@@ -207,31 +181,25 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var existeMascota = await context.Mascotas.Where(mascota=>mascota.IdUsuario == usuario.Id).AnyAsync(mascota=>mascota.Id == mascotaDTO.Id);
                 
-                if(!existeMascota)
-                {
-                    responseApi.Resultado = 0;
-                    responseApi.Mensaje = "No existe una mascota con el Id especificado";
-                    responseApi.Data = null;
-
-                    return responseApi;
-                }
+                if(!existeMascota) return responseApi.respuestaError("No existe una mascota con el Id especificado");
+              
 
                 var cliente = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(cliente => cliente.Id == mascotaDTO.IdCliente);
 
-                if (cliente == null) return BadRequest("No existe un Cliente con el Id especificado");
+                if (cliente == null) return responseApi.respuestaError("No existe un Cliente con el Id especificado");
 
                 var raza = await context.Razas.Where(razas => razas.IdUsuario == usuario.Id).FirstOrDefaultAsync(razas => razas.Id == mascotaDTO.IdRaza);
 
-                if (raza == null) return BadRequest("No existe una Raza con el Id especificado");
+                if (raza == null) return responseApi.respuestaError("No existe una Raza con el Id especificado");
 
                 var enfermedad = await context.Enfermedades.Where(enfermedad => enfermedad.IdUsuario == usuario.Id).FirstOrDefaultAsync(enfermedad => enfermedad.Id == mascotaDTO.IdEnfermedad);
 
-                if (enfermedad == null) return BadRequest("No existe una Enfermedad con el Id especificado");
+                if (enfermedad == null) return responseApi.respuestaError("No existe una Enfermedad con el Id especificado");
 
 
                 var alergia = await context.Alergias.Where(alergias => alergias.IdUsuario == usuario.Id).FirstOrDefaultAsync(alergias => alergias.Id == mascotaDTO.IdAlergia);
 
-                if (alergia == null) return BadRequest("No existe una Alergia con el Id especificado");
+                if (alergia == null) return responseApi.respuestaError("No existe una Alergia con el Id especificado");
 
                 var mascota = mapper.Map<Mascota>(mascotaDTO);
                 
@@ -247,19 +215,15 @@ namespace ApiAdministracionPeluqueria.Controllers
                 context.Update(mascota);
                 await context.SaveChangesAsync();
 
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data = mascota;
+
+                return responseApi.respuestaExitosa();
 
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+              return responseApi.respuestaError(ex.Message);
             }
 
-            return responseApi;
         }
 
         #endregion
@@ -267,7 +231,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region ELIMINAR MASCOTA
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<ResponseApi>> EliminarMascota([FromRoute]int id)
+        public async Task<ActionResult<ModeloRespuesta>> EliminarMascota([FromRoute]int id)
         {
 
 
@@ -279,29 +243,19 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var mascota = await context.Mascotas.Where(mascota=>mascota.IdUsuario == usuario.Id).FirstOrDefaultAsync(mascota=>mascota.Id==id);
 
-                if(mascota == null)
-                {
-                    responseApi.Resultado = 0;
-                    responseApi.Mensaje = "No existe una mascota con el Id especificado";
-                    responseApi.Data = null;
+                if(mascota == null) return responseApi.respuestaError("No existe una mascota con el Id especificado");
 
-                    return responseApi;
-                }
 
                 context.Remove(mascota);
                 await context.SaveChangesAsync();
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data = null;
+
+                return responseApi.respuestaExitosa();
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+                return responseApi.respuestaError(ex.Message);
             }
 
-            return responseApi;
         }
 
 

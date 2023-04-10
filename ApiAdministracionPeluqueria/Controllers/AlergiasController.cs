@@ -4,11 +4,10 @@ using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+
 
 namespace ApiAdministracionPeluqueria.Controllers
 {
@@ -40,7 +39,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MOSTRAR ALERGIAS
 
         [HttpGet]
-        public async Task<ActionResult<ResponseApi>> Get()
+        public async Task<ActionResult<ModeloRespuesta>> Get()
         {
 
             try
@@ -55,29 +54,15 @@ namespace ApiAdministracionPeluqueria.Controllers
                 var alergias = await context.Alergias.Where(alergia => alergia.IdUsuario == usuario.Id).ToListAsync();
 
 
-
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = "";
-                responseApi.Data = mapper.Map<List<AlergiaDTO>>(alergias);
-
-
+                return responseApi.respuestaExitosa(mapper.Map<List<AlergiaDTO>>(alergias));
 
 
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+                return responseApi.respuestaError(ex.Message);
             }
             
-
-            
-            
-
-
-
-            return responseApi;
 
         }
 
@@ -89,7 +74,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region INSERTAR ALERGIA
 
         [HttpPost]
-        public async Task<ActionResult<ResponseApi>> Post([FromBody]AlergiaCreacionDTO nuevaAlergiaDTO)
+        public async Task<ActionResult<ModeloRespuesta>> Post([FromBody]AlergiaCreacionDTO nuevaAlergiaDTO)
         {
 
 
@@ -110,19 +95,15 @@ namespace ApiAdministracionPeluqueria.Controllers
                 context.Add(nuevaAlergia);
                 await context.SaveChangesAsync();
 
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = "";
-                responseApi.Data = mapper.Map<AlergiaDTO>(nuevaAlergia);
+                return responseApi.respuestaExitosa(mapper.Map<AlergiaDTO>(nuevaAlergia));
             }
             catch (Exception ex)
             {
 
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+                return responseApi.respuestaError(ex.Message);
+ 
             }
 
-            return responseApi;
         }
 
         #endregion
@@ -132,54 +113,37 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MODIFICAR ALERGIA
 
         [HttpPut]
-        public async Task<ActionResult<ResponseApi>> Put([FromBody] AlergiaDTO alergiaDTO)
+        public async Task<ActionResult<ModeloRespuesta>> Put([FromBody] AlergiaDTO alergiaDTO)
         {
             try
             {
-                bool existe = await context.Alergias.AnyAsync(alergia=> alergia.Id == alergiaDTO.Id);
+                bool existe = await context.Alergias.AnyAsync(alergia => alergia.Id == alergiaDTO.Id);
 
 
-                if (!existe)
-                {
+                if (!existe) return responseApi.respuestaError("No existe una alergia con el Id especificado");
 
-                    responseApi.Resultado = 0;
-                    responseApi.Mensaje = "No existe una alergia con el Id especificado";
-                    responseApi.Data = null;
-
-
-                    return responseApi;
-
-                }
-            
                 var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
                 var email = claimEmail.Value;
                 var usuario = await userManager.FindByEmailAsync(email);
 
-            
-            
+
+
                 var alergia = mapper.Map<Alergia>(alergiaDTO);
                 alergia.IdUsuario = usuario.Id;
 
-            
-            
+
+
                 context.Update(alergia);
                 await context.SaveChangesAsync();
 
-
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = "Se actualizo correctamente";
-                responseApi.Data = null;
+                return responseApi.respuestaExitosa();
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+                
+                return responseApi.respuestaError(ex.Message);
 
             }
-
-
-            return responseApi;
         }
 
         #endregion
@@ -188,41 +152,32 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region ELIMINAR ALERGIA
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<ResponseApi>> Delete([FromRoute]int id)
+        public async Task<ActionResult<ModeloRespuesta>> Delete([FromRoute]int id)
         {
 
             try
             {
-                bool existe = await context.Alergias.AnyAsync(alergia => alergia.Id == id);
 
-                if (!existe)
-                {
-                    responseApi.Resultado = 0;
-                    responseApi.Mensaje = "No existe una alergia con el Id especificado";
-                    responseApi.Data = null;
-
-                    return responseApi;
-                }        
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = claimEmail.Value;
+                var usuario = await userManager.FindByEmailAsync(email);
                 
-                var alergia = await context.Alergias.FirstOrDefaultAsync(alergia => alergia.Id == id);
+                var alergia = await context.Alergias.Where(alergia=>alergia.IdUsuario == usuario.Id).FirstOrDefaultAsync(alergia => alergia.Id == id);
+
+                if (alergia == null) return responseApi.respuestaError("No existe una alergia con el Id especificado");
 
                 context.Remove(alergia);
                 await context.SaveChangesAsync();
 
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = "";
-                responseApi.Data = null;
-
+                return responseApi.respuestaExitosa();
+            
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+               return responseApi.respuestaError(ex.Message);
 
             }
 
-            return responseApi;
         }
 
         #endregion

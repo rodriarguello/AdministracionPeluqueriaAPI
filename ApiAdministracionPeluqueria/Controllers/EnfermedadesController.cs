@@ -1,8 +1,6 @@
 ﻿using ApiAdministracionPeluqueria.Models.Entidades;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
 using ApiAdministracionPeluqueria.Models;
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO;
@@ -38,7 +36,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MOSTRAR ENFERMEDADES
 
         [HttpGet]
-        public async Task<ActionResult<ResponseApi>> Get()
+        public async Task<ActionResult<ModeloRespuesta>> Get()
         {
 
             try
@@ -52,22 +50,14 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var enfermedades = await context.Enfermedades.Where(enfermedad => enfermedad.IdUsuario == usuario.Id).ToListAsync();
 
-
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data = mapper.Map<List<EnfermedadDTO>>(enfermedades) ;
+    
+                return responseApi.respuestaExitosa(mapper.Map<List<EnfermedadDTO>>(enfermedades));
 
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+                return responseApi.respuestaError(ex.Message);
             }
-
-
-
-            return responseApi;
 
         }
 
@@ -79,7 +69,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region INSERTAR ENFERMEDAD
 
         [HttpPost]
-        public async Task<ActionResult<ResponseApi>> Post([FromBody] EnfermedadCreacionDTO nuevaEnfermedadDTO)
+        public async Task<ActionResult<ModeloRespuesta>> Post([FromBody] EnfermedadCreacionDTO nuevaEnfermedadDTO)
         {
 
             try
@@ -100,19 +90,13 @@ namespace ApiAdministracionPeluqueria.Controllers
             
                 await context.SaveChangesAsync();
 
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data = mapper.Map<EnfermedadDTO>(nuevaEnfermedad);
-
+                return responseApi.respuestaExitosa();
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+                return responseApi.respuestaError(ex.Message);
             }
 
-            return responseApi;
         }
 
         #endregion
@@ -122,7 +106,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MODIFICAR ENFERMEDAD
 
         [HttpPut]
-        public async Task<ActionResult<ResponseApi>> Put([FromBody] EnfermedadDTO enfermedadDTO)
+        public async Task<ActionResult<ModeloRespuesta>> Put([FromBody] EnfermedadDTO enfermedadDTO)
         {
 
             try
@@ -130,14 +114,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 bool existe = await context.Enfermedades.AnyAsync(enfermedad => enfermedad.Id == enfermedadDTO.Id);
 
-                if (!existe){
-
-                    responseApi.Resultado = 0;
-                    responseApi.Mensaje = "No existe una enfermedad con el Id especificado";
-                    responseApi.Data = null;
-
-                    return responseApi; 
-                }
+                if (!existe) return responseApi.respuestaError("No existe una enfermedad con el Id especificado");
 
 
                 var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
@@ -153,20 +130,14 @@ namespace ApiAdministracionPeluqueria.Controllers
                 context.Update(enfermedad);
                 await context.SaveChangesAsync();
 
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data = null;
+
+                return responseApi.respuestaExitosa();
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+                return  responseApi.respuestaError(ex.Message);
             }
 
-
-
-            return responseApi;
         }
 
         #endregion
@@ -175,45 +146,28 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region ELIMINAR ENFERMEDAD
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<ResponseApi>> Delete([FromRoute] int id)
+        public async Task<ActionResult<ModeloRespuesta>> Delete([FromRoute] int id)
         {
-
 
             try
             {
 
                 bool existe = await context.Enfermedades.AnyAsync(enfermedad => enfermedad.Id == id);
 
-                if (!existe)
-                {
-                    responseApi.Resultado = 0;
-                    responseApi.Mensaje = "No existe una enfermedad con el Id especificado";
-                    responseApi.Data = null;
-
-                    return responseApi;
-
-                }
+                if (!existe) return responseApi.respuestaError("No existe una enfermedad con el Id especificado");
                     
                 var enfermedad = await context.Enfermedades.FirstOrDefaultAsync(enfermedad => enfermedad.Id == id);
 
                 context.Remove(enfermedad);
                 await context.SaveChangesAsync();
 
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data = null;
-
+                return responseApi.respuestaExitosa();
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
-
+                return responseApi.respuestaError(ex.Message);
+                
             }
-
-
-            return responseApi;
         }
 
         #endregion

@@ -38,7 +38,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MOSTRAR CLIENTES
 
         [HttpGet]
-        public async Task<ActionResult<ResponseApi>> Get()
+        public async Task<ActionResult<ModeloRespuesta>> Get()
         {
             try
             {
@@ -50,23 +50,20 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var clientes = await context.Clientes.Include(cliente=>cliente.Mascotas).Where(cliente => cliente.IdUsuario == usuario.Id).ToListAsync();
 
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data= mapper.Map<List<ClienteDTO>>(clientes);
+
+                return responseApi.respuestaExitosa(mapper.Map<List<ClienteDTO>>(clientes));
+
             }
             catch (Exception ex)
             {
-                responseApi.Resultado=0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+               return  responseApi.respuestaError(ex.Message);
                 
             }
 
-            return responseApi;
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<ResponseApi>> GetPorId([FromRoute]int id)
+        public async Task<ActionResult<ModeloRespuesta>> GetPorId([FromRoute]int id)
         {
             try
             {
@@ -79,31 +76,20 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var cliente = await context.Clientes.Include(cliente=>cliente.Mascotas).Where(cliente=>cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(x=> x.Id == id);
 
-                if (cliente == null)
-                {
-                    responseApi.Resultado = 0;
-                    responseApi.Mensaje = "No existe un cliente con el id especificado";
-                    responseApi.Data = null;
-
-                    return responseApi;
-                }
+                if (cliente == null) return  responseApi.respuestaError("No existe un cliente con el id especificado");
+                 
 
 
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data = mapper.Map<ClienteDTO>(cliente);
+               return responseApi.respuestaExitosa(mapper.Map<ClienteDTO>(cliente));
 
 
             }
             catch (Exception ex)
             {
 
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+              return responseApi.respuestaError(ex.Message);
             }
 
-            return responseApi;
         }
 
 
@@ -114,7 +100,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region INSERTAR CLIENTE
 
         [HttpPost]
-        public async Task<ActionResult<ResponseApi>> Post([FromBody]ClienteCreacionDTO nuevoClienteDTO)
+        public async Task<ActionResult<ModeloRespuesta>> Post([FromBody]ClienteCreacionDTO nuevoClienteDTO)
         {
 
             try
@@ -134,20 +120,14 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 await context.SaveChangesAsync();
 
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data = mapper.Map<ClienteDTO>(nuevoCliente);
-
+                return responseApi.respuestaExitosa(mapper.Map<ClienteSinMascotasDTO>(nuevoCliente));
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+                return responseApi.respuestaError(ex.Message);
                 
             }
 
-            return responseApi;
         }
 
         #endregion
@@ -157,7 +137,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MODIFICAR CLIENTES
 
         [HttpPut]
-        public async Task<ActionResult<ResponseApi>> Put([FromBody]ClienteDTO clienteDTO)
+        public async Task<ActionResult<ModeloRespuesta>> Put([FromBody]ClienteModificarDTO clienteDTO)
         {
             try
             {
@@ -167,41 +147,30 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var usuario = await userManager.FindByEmailAsync(email);
 
-                var cliente = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(cliente => cliente.Id == clienteDTO.Id);
+                var cliente = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id)
+                    .Include(cliente=>cliente.Mascotas)
+                    .FirstOrDefaultAsync(cliente => cliente.Id == clienteDTO.Id);
 
-                if (cliente == null)
-                {
-                    responseApi.Resultado = 0;
-                    responseApi.Mensaje = "No existe un cliente con Id especificado";
-                    responseApi.Data = null;
 
-                    return responseApi;
-                }
 
-               
+                
 
-                cliente = mapper.Map<Cliente>(clienteDTO);
-            
+                if (cliente == null) return responseApi.respuestaError("No existe un cliente con Id especificado");
 
-                context.Update(cliente);
-            
+                cliente = mapper.Map(clienteDTO,cliente);
+
+
                 await context.SaveChangesAsync();
 
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data  = null;
-
+                return responseApi.respuestaExitosa();
 
             }
             catch (Exception ex)
             {
 
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+              return  responseApi.respuestaError(ex.Message);
             }
 
-            return responseApi;
         }
 
         #endregion
@@ -211,7 +180,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region ELIMINAR CLIENTE
 
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<ResponseApi>> Delete([FromRoute] int id)
+        public async Task<ActionResult<ModeloRespuesta>> Delete([FromRoute] int id)
         {
             try
             {
@@ -223,32 +192,18 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var cliente = await context.Clientes.Where(cliente=>cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(cliente => cliente.Id == id);
 
-                if (cliente==null)
-                {
-                    responseApi.Resultado = 0;
-                    responseApi.Mensaje = "No existe un cliente con el Id especificado";
-                    responseApi.Data = null;
-                    return responseApi;
-                }
-
-                
+                if (cliente==null) return responseApi.respuestaError("No existe un cliente con el Id especificado");
 
                 context.Remove(cliente);
                 await context.SaveChangesAsync();
 
-                responseApi.Resultado = 1;
-                responseApi.Mensaje = null;
-                responseApi.Data = null;
-
+                return responseApi.respuestaExitosa();
             }
             catch (Exception ex)
             {
-                responseApi.Resultado = 0;
-                responseApi.Mensaje = ex.Message;
-                responseApi.Data = null;
+              return responseApi.respuestaError(ex.Message);
             }
 
-            return responseApi;
         }
 
         #endregion
