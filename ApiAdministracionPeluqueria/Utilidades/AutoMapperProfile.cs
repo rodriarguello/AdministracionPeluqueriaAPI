@@ -3,6 +3,8 @@ using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.CalendarioDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.FechaDTO;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.HorarioDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.RazaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
@@ -20,6 +22,8 @@ namespace ApiAdministracionPeluqueria.Utilidades
             CreateMap<ClienteCreacionDTO, Cliente>();
             CreateMap<Cliente, ClienteDTO>().ReverseMap();
             CreateMap<Cliente, ClienteSinMascotasDTO>().ReverseMap();
+
+            CreateMap<Cliente,ClienteModificarDTO>().ReverseMap();
 
             #endregion
 
@@ -56,6 +60,7 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
             CreateMap<TurnoModificarDTO, Turno>().ReverseMap();
             CreateMap<TurnoDTO, Turno>().ReverseMap();
+            
 
             #endregion
 
@@ -72,12 +77,26 @@ namespace ApiAdministracionPeluqueria.Utilidades
             #region MASCOTAS
 
             CreateMap<MascotaCreacionDTO,Mascota>();
-            CreateMap<MascotaDTO, Mascota>().ReverseMap();
-            CreateMap<Mascota, MascotaSinClienteDTO>();
+            CreateMap<MascotaSinCliente, Mascota>().ReverseMap();
+            CreateMap<Mascota, MascotaSinClienteDTO>().ReverseMap();
 
 
             #endregion
 
+
+
+            #region FECHAS
+
+            CreateMap<Fecha,FechaSinCalendarioDTO>();
+
+            #endregion
+
+
+
+
+            #region HORARIOS
+            CreateMap<Horario, HorarioSinCalendarioDTO>().ReverseMap();
+            #endregion
         }
     }
 }
