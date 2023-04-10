@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO
 {
-    public class MascotaDTO
+    public class MascotaSinCliente
     {
         [Required]
         public int Id { get; set; }
