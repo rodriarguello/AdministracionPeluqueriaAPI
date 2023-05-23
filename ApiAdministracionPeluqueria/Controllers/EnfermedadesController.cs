@@ -86,11 +86,11 @@ namespace ApiAdministracionPeluqueria.Controllers
                 nuevaEnfermedad.IdUsuario = usuario.Id;
 
             
-                context.Add(nuevaEnfermedad);
+                context.Enfermedades.Add(nuevaEnfermedad);
             
                 await context.SaveChangesAsync();
 
-                return responseApi.respuestaExitosa();
+                return responseApi.respuestaExitosa(mapper.Map<EnfermedadDTO>(nuevaEnfermedad));
             }
             catch (Exception ex)
             {
@@ -111,23 +111,23 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             try
             {
-
-                bool existe = await context.Enfermedades.AnyAsync(enfermedad => enfermedad.Id == enfermedadDTO.Id);
-
-                if (!existe) return responseApi.respuestaError("No existe una enfermedad con el Id especificado");
-
-
                 var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
                 var email = claimEmail.Value;
                 var usuario = await userManager.FindByEmailAsync(email);
+
+                bool existe = await context.Enfermedades
+                                    .Where(enfermedad => enfermedad.IdUsuario == usuario.Id)
+                                    .AnyAsync(enfermedad => enfermedad.Id == enfermedadDTO.Id);
+
+                if (!existe) return responseApi.respuestaError("No existe una enfermedad con el Id especificado");
 
 
             
                 var enfermedad = mapper.Map<Enfermedad>(enfermedadDTO);
                 enfermedad.IdUsuario = usuario.Id;
 
-            
-                context.Update(enfermedad);
+                
+                context.Enfermedades.Update(enfermedad);
                 await context.SaveChangesAsync();
 
 
@@ -152,13 +152,18 @@ namespace ApiAdministracionPeluqueria.Controllers
             try
             {
 
-                bool existe = await context.Enfermedades.AnyAsync(enfermedad => enfermedad.Id == id);
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = claimEmail.Value;
+                var usuario = await userManager.FindByEmailAsync(email);
 
-                if (!existe) return responseApi.respuestaError("No existe una enfermedad con el Id especificado");
+                var enfermedad = await context.Enfermedades
+                                       .Where(enfermedad=>enfermedad.IdUsuario == usuario.Id)
+                                       .FirstOrDefaultAsync(enfermedad => enfermedad.Id == id);
+
+                if (enfermedad == null) return responseApi.respuestaError("No existe una enfermedad con el Id especificado");
                     
-                var enfermedad = await context.Enfermedades.FirstOrDefaultAsync(enfermedad => enfermedad.Id == id);
 
-                context.Remove(enfermedad);
+                context.Enfermedades.Remove(enfermedad);
                 await context.SaveChangesAsync();
 
                 return responseApi.respuestaExitosa();
