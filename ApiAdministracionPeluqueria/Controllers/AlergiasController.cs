@@ -92,7 +92,8 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 nuevaAlergia.IdUsuario = usuario.Id;
 
-                context.Add(nuevaAlergia);
+                context.Alergias.Add(nuevaAlergia);
+
                 await context.SaveChangesAsync();
 
                 return responseApi.respuestaExitosa(mapper.Map<AlergiaDTO>(nuevaAlergia));
@@ -133,7 +134,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-                context.Update(alergia);
+                context.Alergias.Update(alergia);
                 await context.SaveChangesAsync();
 
                 return responseApi.respuestaExitosa();
@@ -166,7 +167,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (alergia == null) return responseApi.respuestaError("No existe una alergia con el Id especificado");
 
-                context.Remove(alergia);
+                context.Alergias.Remove(alergia);
                 await context.SaveChangesAsync();
 
                 return responseApi.respuestaExitosa();
