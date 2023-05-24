@@ -152,7 +152,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 context.Mascotas.Add(nuevaMascota);
                 await context.SaveChangesAsync();
 
-                return responseApi.respuestaExitosa();
+                return responseApi.respuestaExitosa(mapper.Map<MascotaSinClienteDTO>(nuevaMascota));
 
             }
             catch (Exception ex)
