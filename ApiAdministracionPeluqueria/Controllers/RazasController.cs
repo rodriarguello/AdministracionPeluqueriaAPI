@@ -91,7 +91,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 await context.SaveChangesAsync();
 
                
-                return responseApi.respuestaExitosa();
+                return responseApi.respuestaExitosa(mapper.Map<RazaDTO>(nuevaRaza));
 
 
             }
