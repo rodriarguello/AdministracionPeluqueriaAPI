@@ -112,7 +112,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                     .ToListAsync();
 
 
-
+                if(turnos.Count == 0) return responseApi.respuestaError("No existen turnos en esa fecha");
 
                 return responseApi.respuestaExitosa(mapper.Map<List<TurnoDTO>>(turnos));
 
