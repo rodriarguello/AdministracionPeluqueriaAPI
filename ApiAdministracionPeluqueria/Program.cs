@@ -22,8 +22,11 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
 
+string connectionString = builder.Configuration.GetConnectionString("mySql");
+var serverVersion = new MySqlServerVersion(new Version(8,0,33));
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("conexionSql")));
+
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(connectionString,serverVersion));
 
 
 #region CONFIGURACION JWT
