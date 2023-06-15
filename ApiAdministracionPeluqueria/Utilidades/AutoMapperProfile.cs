@@ -9,6 +9,7 @@ using ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.RazaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
 using AutoMapper;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ApiAdministracionPeluqueria.Utilidades
 {
@@ -77,8 +78,11 @@ namespace ApiAdministracionPeluqueria.Utilidades
             #region MASCOTAS
 
             CreateMap<MascotaCreacionDTO,Mascota>();
-            CreateMap<MascotaSinCliente, Mascota>().ReverseMap();
-            CreateMap<Mascota, MascotaSinClienteDTO>().ReverseMap();
+            CreateMap<Mascota, MascotaSinClienteDTO>()
+                .ForMember(mascotaDTO=> mascotaDTO.Enfermedades, opciones=> opciones.MapFrom(MapMascotaEnfermedadesAenfermedadesDTO))
+                .ForMember(mascotaDTO=>mascotaDTO.IdEnfermedades, opciones => opciones.MapFrom(MapIdEnfermedades));
+            CreateMap<Mascota, MascotaNombreFechaNacimientoDTO>().ReverseMap();
+            CreateMap<MascotaModificarDTO,Mascota>();
 
 
             #endregion
@@ -97,6 +101,46 @@ namespace ApiAdministracionPeluqueria.Utilidades
             #region HORARIOS
             CreateMap<Horario, HorarioSinCalendarioDTO>().ReverseMap();
             #endregion
+
+
+        }
+
+        private List<EnfermedadDTO> MapMascotaEnfermedadesAenfermedadesDTO(Mascota mascota, MascotaSinClienteDTO mascotaSinClienteDTO)
+        {
+            var resultado = new List<EnfermedadDTO>(); 
+
+            if(mascota.Enfermedades.Count < 1) return resultado;
+
+            foreach (var enfermedad in mascota.Enfermedades)
+            {
+                
+                resultado.Add(new EnfermedadDTO
+                {
+                    Id = enfermedad.EnfermedadId,
+                    Nombre = enfermedad.Enfermedad.Nombre
+                });
+            }
+
+
+            return resultado;
+
+        }
+
+        private List<int> MapIdEnfermedades(Mascota mascota, MascotaSinClienteDTO mascotaSinClienteDTO)
+        {
+            var respuesta = new List<int>();
+            if (mascota.Enfermedades.Count < 1) return respuesta;
+
+            foreach (var enfermedad in mascota.Enfermedades)
+            {
+
+                respuesta.Add(enfermedad.EnfermedadId);
+
+            }
+
+            return respuesta;
+
+
         }
     }
 }
