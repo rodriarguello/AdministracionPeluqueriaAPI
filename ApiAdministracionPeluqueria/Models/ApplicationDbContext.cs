@@ -29,7 +29,9 @@ namespace ApiAdministracionPeluqueria.Models
 
         public DbSet<Calendario> Calendarios { get; set; }
 
-        public DbSet<MascotaEnfermedad>  MascotaEnfermedades { get; set; }
+        public DbSet<MascotaEnfermedad>  MascotasEnfermedades { get; set; }
+
+        public DbSet<MascotaAlergia> MascotasAlergias { get; set; }
 
 
 
@@ -37,6 +39,8 @@ namespace ApiAdministracionPeluqueria.Models
         {
 
             builder.Entity<MascotaEnfermedad>().HasKey(x=> new {x.MascotaId,x.EnfermedadId});
+
+            builder.Entity<MascotaAlergia>().HasKey(x => new {x.IdMascota,x.IdAlergia});
 
             base.OnModelCreating(builder);
         }
