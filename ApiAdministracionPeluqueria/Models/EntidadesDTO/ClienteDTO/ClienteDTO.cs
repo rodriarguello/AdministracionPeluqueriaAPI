@@ -18,7 +18,7 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO
 
         public string? Email { get; set; }
 
-        public List<MascotaSinClienteDTO> Mascotas { get; set; }
+        public List<MascotaNombreFechaNacimientoDTO> Mascotas { get; set; }
 
 
     }
