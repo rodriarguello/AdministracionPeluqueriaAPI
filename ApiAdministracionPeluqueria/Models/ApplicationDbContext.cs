@@ -28,6 +28,18 @@ namespace ApiAdministracionPeluqueria.Models
         public DbSet<Turno> Turnos { get; set; }
 
         public DbSet<Calendario> Calendarios { get; set; }
-        
+
+        public DbSet<MascotaEnfermedad>  MascotaEnfermedades { get; set; }
+
+
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+
+            builder.Entity<MascotaEnfermedad>().HasKey(x=> new {x.MascotaId,x.EnfermedadId});
+
+            base.OnModelCreating(builder);
+        }
+
     }
 }
