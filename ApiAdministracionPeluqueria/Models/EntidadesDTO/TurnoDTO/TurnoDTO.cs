@@ -18,7 +18,7 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO
         [Required]
         public bool Disponible { get; set; }
 
-        public MascotaDTO.MascotaSinClienteDTO? Mascota { get; set; }
+        public MascotaDTO.MascotaNombreFechaNacimientoDTO? Mascota { get; set; }
 
         public bool? Asistio { get; set; }
 
