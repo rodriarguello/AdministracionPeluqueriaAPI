@@ -7,6 +7,8 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
 
         [Required]
         public int IdMascota { get; set; }
+
+        [Required]
         public int IdAlergia { get; set; }
 
         public Mascota Mascota { get; set; }

@@ -26,11 +26,8 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
 
         public List<MascotaEnfermedad> Enfermedades { get; set; }
 
-        [Required]
-        public int IdAlergia { get; set; }
-
-        public Alergia? Alergia { get; set; }
-
+        public List<MascotaAlergia> Alergias { get; set; }  
+        
         public List<Turno>? Turno { get; set; }
 
         [Required]
