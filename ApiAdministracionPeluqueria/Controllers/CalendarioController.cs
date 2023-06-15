@@ -90,7 +90,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 #region VALIDACIONES
 
                 
-
+                
 
                 if (nuevoCalendarioDTO.HoraInicioTurnos < 0) return responseApi.respuestaError("La hora de inicio no puede ser un número negativo");
 
@@ -98,7 +98,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (nuevoCalendarioDTO.IntervaloTurnos < 10) return responseApi.respuestaError("El intervalo entre turnos tiene que ser de 10 minutos como mínimo");
 
-                if (nuevoCalendarioDTO.FechaFin == nuevoCalendarioDTO.FechaInicio) return responseApi.respuestaError("La fecha de inicio del calendario no puede ser igual a la fecha de fin");
+                if (nuevoCalendarioDTO.FechaFin <= nuevoCalendarioDTO.FechaInicio) return responseApi.respuestaError("La fecha de fin del calendario no puede ser menor o igual a la fecha de fin");
 
             
                 var calendarios = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuarioId).ToListAsync();
@@ -138,6 +138,8 @@ namespace ApiAdministracionPeluqueria.Controllers
                 nuevoCalendario.IntervaloTurnos= intervalo;
 
                 nuevoCalendario.IdUsuario = usuarioId;
+
+                nuevoCalendario.Usuario = usuario;
 
                 context.Calendarios.Add(nuevoCalendario);
                 await context.SaveChangesAsync();
