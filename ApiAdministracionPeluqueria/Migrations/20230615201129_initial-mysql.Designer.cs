@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApiAdministracionPeluqueria.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230615015658_initial-mysql")]
+    [Migration("20230615201129_initial-mysql")]
     partial class initialmysql
     {
         /// <inheritdoc />
@@ -205,9 +205,39 @@ namespace ApiAdministracionPeluqueria.Migrations
                     b.ToTable("Mascotas");
                 });
 
+            modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.MascotaAlergia", b =>
+                {
+                    b.Property<int>("IdMascota")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdAlergia")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AlergiaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IdUsuario")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("MascotaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdMascota", "IdAlergia");
+
+                    b.HasIndex("AlergiaId");
+
+                    b.HasIndex("MascotaId");
+
+                    b.ToTable("MascotasAlergias");
+                });
+
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.MascotaEnfermedad", b =>
                 {
-                    b.Property<int>("MascotaId")
+                    b.Property<int>("IdMascota")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdEnfermedad")
                         .HasColumnType("int");
 
                     b.Property<int>("EnfermedadId")
@@ -217,11 +247,16 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.HasKey("MascotaId", "EnfermedadId");
+                    b.Property<int>("MascotaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdMascota", "IdEnfermedad");
 
                     b.HasIndex("EnfermedadId");
 
-                    b.ToTable("MascotaEnfermedades");
+                    b.HasIndex("MascotaId");
+
+                    b.ToTable("MascotasEnfermedades");
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Raza", b =>
@@ -526,6 +561,25 @@ namespace ApiAdministracionPeluqueria.Migrations
                     b.Navigation("Cliente");
 
                     b.Navigation("Raza");
+                });
+
+            modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.MascotaAlergia", b =>
+                {
+                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Alergia", "Alergia")
+                        .WithMany()
+                        .HasForeignKey("AlergiaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ApiAdministracionPeluqueria.Models.Entidades.Mascota", "Mascota")
+                        .WithMany()
+                        .HasForeignKey("MascotaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Alergia");
+
+                    b.Navigation("Mascota");
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.MascotaEnfermedad", b =>

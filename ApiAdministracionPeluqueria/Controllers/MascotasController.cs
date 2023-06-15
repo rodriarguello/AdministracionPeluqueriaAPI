@@ -45,7 +45,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 var usuario = await userManager.FindByEmailAsync(email);
 
                 var mascotas = new List<Mascota>();
-                
+
                 mascotas = await context.Mascotas.Include(mascotas=>mascotas.Cliente)
                                                  .Include(mascotas=>mascotas.Raza)
                                                  .Include(mascotas=>mascotas.Enfermedades)
@@ -53,8 +53,8 @@ namespace ApiAdministracionPeluqueria.Controllers
                                                  .Include(mascotas=>mascotas.Alergia)
                                                  .Where(mascota=>mascota.IdUsuario == usuario.Id).ToListAsync();
 
-                 
-                
+
+
 
 
 
@@ -97,7 +97,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                     .Where(mascotas => mascotas.Id == id).FirstOrDefaultAsync();
 
                 if(mascota == null) return responseApi.respuestaError("No existe una mascota con el Id especificado");
-                
+
                 return responseApi.respuestaExitosa(mapper.Map<MascotaSinClienteDTO>(mascota));
 
             }
@@ -107,7 +107,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 return  responseApi.respuestaError(ex.Message);
             }
 
-            
+
         }
 
         #endregion
@@ -128,7 +128,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var usuario = await userManager.FindByEmailAsync(email);
 
-                
+
                 var cliente = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(cliente => cliente.Id == nuevaMascotaDTO.IdCliente);
 
                 if (cliente == null) return responseApi.respuestaError("No existe un Cliente con el Id especificado");
@@ -136,11 +136,11 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var raza = await context.Razas.Where(razas => razas.IdUsuario == usuario.Id).FirstOrDefaultAsync(razas => razas.Id == nuevaMascotaDTO.IdRaza);
 
-                if (raza==null) return responseApi.respuestaError("No existe una Raza con el Id especificado");
+                if (raza == null) return responseApi.respuestaError("No existe una Raza con el Id especificado");
 
 
                 if (nuevaMascotaDTO.IdEnfermedad.Count < 1) return  responseApi.respuestaError("El campo enfermedad es obligatorio");
-                
+
 
                 var listEnfermedades = await context.Enfermedades
                                              .Where(enfermedad => nuevaMascotaDTO.IdEnfermedad.Contains(enfermedad.Id)).ToListAsync();
@@ -155,7 +155,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 var nuevaMascota = mapper.Map<Mascota>(nuevaMascotaDTO);
                 nuevaMascota.Cliente = cliente;
                 nuevaMascota.Raza= raza;
-                
+
                 nuevaMascota.Alergia = alergia;
 
 
@@ -163,20 +163,20 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 context.Mascotas.Add(nuevaMascota);
 
-                
+
 
                 await context.SaveChangesAsync();
 
 
                 foreach (var enfermedad in listEnfermedades)
                 {
-                    
-                    context.MascotaEnfermedades.Add(new MascotaEnfermedad { 
-                        
-                        MascotaId = nuevaMascota.Id,
-                        
-                        EnfermedadId = enfermedad.Id,
-                        
+
+                    context.MascotasEnfermedades.Add(new MascotaEnfermedad { 
+
+                        IdMascota = nuevaMascota.Id,
+
+                        IdEnfermedad = enfermedad.Id,
+
                         IdUsuario = usuario.Id
                     });
 
@@ -185,9 +185,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 await context.SaveChangesAsync();
 
-                
-                
-                
+
+
+
                 return responseApi.respuestaExitosa(mapper.Map<MascotaNombreFechaNacimientoDTO>(nuevaMascota));
 
             }
@@ -208,7 +208,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         public async Task<ActionResult<ModeloRespuesta>> ModificarMascota([FromBody]MascotaModificarDTO mascotaDTO)
         {
             try
-            {   
+            {
                 var claimEmail = HttpContext.User.Claims.Where(claims => claims.Type == "email").FirstOrDefault();
 
                 var email = claimEmail.Value;
@@ -216,9 +216,9 @@ namespace ApiAdministracionPeluqueria.Controllers
                 var usuario = await userManager.FindByEmailAsync(email);
 
                 var existeMascota = await context.Mascotas.Where(mascota=>mascota.IdUsuario == usuario.Id).AnyAsync(mascota=>mascota.Id == mascotaDTO.Id);
-                
-                if(!existeMascota) return responseApi.respuestaError("No existe una mascota con el Id especificado");
-              
+
+                if (!existeMascota) return responseApi.respuestaError("No existe una mascota con el Id especificado");
+
 
                 var cliente = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(cliente => cliente.Id == mascotaDTO.IdCliente);
 
@@ -236,24 +236,24 @@ namespace ApiAdministracionPeluqueria.Controllers
                 if (nuevasEnfermedades.Count != mascotaDTO.IdEnfermedades.Count) return responseApi.respuestaError("Alguna de las enfermedades enviadas no existe");
 
 
-                var enfermedadesEliminar = await context.MascotaEnfermedades
-                                                .Where(me=> me.MascotaId == mascotaDTO.Id && me.IdUsuario == usuario.Id)
-                                                .Where(enfermedadMascota =>!mascotaDTO.IdEnfermedades.Contains(enfermedadMascota.EnfermedadId)).ToListAsync();
+                var enfermedadesEliminar = await context.MascotasEnfermedades
+                                                .Where(me => me.IdMascota == mascotaDTO.Id && me.IdUsuario == usuario.Id)
+                                                .Where(enfermedadMascota => !mascotaDTO.IdEnfermedades.Contains(enfermedadMascota.IdEnfermedad)).ToListAsync();
 
 
                 //Enfermedades existentes que tienen el mismo id que las enfermedades que se envían con la mascota
 
-                var enfermedadesExistentes = await context.MascotaEnfermedades
-                                                .Where(me => me.MascotaId == mascotaDTO.Id && me.IdUsuario == usuario.Id)
-                                                .Where(enfermedadMascota => mascotaDTO.IdEnfermedades.Contains(enfermedadMascota.EnfermedadId)).ToListAsync();
+                var enfermedadesExistentes = await context.MascotasEnfermedades
+                                                .Where(me => me.IdMascota == mascotaDTO.Id && me.IdUsuario == usuario.Id)
+                                                .Where(enfermedadMascota => mascotaDTO.IdEnfermedades.Contains(enfermedadMascota.IdEnfermedad)).ToListAsync();
 
                 if (enfermedadesEliminar.Count > 0)
                 {
 
                     foreach (var enfermedadEliminar in enfermedadesEliminar)
                     {
-                        
-                            context.MascotaEnfermedades.Remove(enfermedadEliminar);
+
+                        context.MascotasEnfermedades.Remove(enfermedadEliminar);
 
                     }
 
@@ -268,32 +268,32 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                         foreach (var enfermedadExistente in enfermedadesExistentes)
                         {
-                            if (enfermedad.Id == enfermedadExistente.EnfermedadId)
+                            if (enfermedad.Id == enfermedadExistente.IdEnfermedad)
                             {
                                 continue;
                             }
                             context.Add(new MascotaEnfermedad
                             {
-                                EnfermedadId = enfermedad.Id,
-                                MascotaId = mascotaDTO.Id,
+                                IdEnfermedad = enfermedad.Id,
+                                IdMascota = mascotaDTO.Id,
                                 IdUsuario = usuario.Id
                             });
-                            
+
 
                         }
-                        
+
                         continue;
                     }
-                        
+
                     context.Add(new MascotaEnfermedad
-                        {
-                            EnfermedadId = enfermedad.Id,
-                            MascotaId = mascotaDTO.Id,
-                            IdUsuario = usuario.Id
-                        });
-                    
+                    {
+                        IdEnfermedad = enfermedad.Id,
+                        IdMascota = mascotaDTO.Id,
+                        IdUsuario = usuario.Id
+                    });
+
                 }
-                
+
 
                 var alergia = await context.Alergias.Where(alergias => alergias.IdUsuario == usuario.Id)
                                                     .FirstOrDefaultAsync(alergias => alergias.Id == mascotaDTO.IdAlergia);
@@ -301,10 +301,10 @@ namespace ApiAdministracionPeluqueria.Controllers
                 if (alergia == null) return responseApi.respuestaError("No existe una Alergia con el Id especificado");
 
                 var mascota = mapper.Map<Mascota>(mascotaDTO);
-                
+
                 mascota.Cliente = cliente;
                 mascota.Raza = raza;
-               
+
                 mascota.Alergia = alergia;
 
                 mascota.IdUsuario = usuario.Id;
@@ -319,7 +319,7 @@ namespace ApiAdministracionPeluqueria.Controllers
             }
             catch (Exception ex)
             {
-              return responseApi.respuestaError(ex.ToString());
+                return responseApi.respuestaError(ex.ToString());
             }
 
         }
@@ -347,9 +347,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 foreach (var enfermedad in mascota.Enfermedades)
                 {
-                    context.MascotaEnfermedades.Remove(enfermedad);
+                    context.MascotasEnfermedades.Remove(enfermedad);
                 }
-                
+
                 context.Remove(mascota);
                 await context.SaveChangesAsync();
 

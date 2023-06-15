@@ -6,9 +6,9 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
     public class MascotaEnfermedad
     {
         [Required]
-        public int MascotaId { get; set; }
+        public int IdMascota { get; set; }
         [Required]
-        public int EnfermedadId { get; set; }
+        public int IdEnfermedad { get; set; }
 
         
         public Enfermedad Enfermedad { get; set;}

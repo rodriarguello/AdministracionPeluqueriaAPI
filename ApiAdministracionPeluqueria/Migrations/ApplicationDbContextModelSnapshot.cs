@@ -231,7 +231,10 @@ namespace ApiAdministracionPeluqueria.Migrations
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.MascotaEnfermedad", b =>
                 {
-                    b.Property<int>("MascotaId")
+                    b.Property<int>("IdMascota")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdEnfermedad")
                         .HasColumnType("int");
 
                     b.Property<int>("EnfermedadId")
@@ -241,9 +244,14 @@ namespace ApiAdministracionPeluqueria.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.HasKey("MascotaId", "EnfermedadId");
+                    b.Property<int>("MascotaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdMascota", "IdEnfermedad");
 
                     b.HasIndex("EnfermedadId");
+
+                    b.HasIndex("MascotaId");
 
                     b.ToTable("MascotasEnfermedades");
                 });

@@ -38,7 +38,7 @@ namespace ApiAdministracionPeluqueria.Models
         protected override void OnModelCreating(ModelBuilder builder)
         {
 
-            builder.Entity<MascotaEnfermedad>().HasKey(x=> new {x.MascotaId,x.EnfermedadId});
+            builder.Entity<MascotaEnfermedad>().HasKey(x=> new {x.IdMascota,x.IdEnfermedad});
 
             builder.Entity<MascotaAlergia>().HasKey(x => new {x.IdMascota,x.IdAlergia});
 

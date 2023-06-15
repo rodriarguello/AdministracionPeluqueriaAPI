@@ -9,7 +9,6 @@ using ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.RazaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
 using AutoMapper;
-using Microsoft.IdentityModel.Tokens;
 
 namespace ApiAdministracionPeluqueria.Utilidades
 {
@@ -116,7 +115,7 @@ namespace ApiAdministracionPeluqueria.Utilidades
                 
                 resultado.Add(new EnfermedadDTO
                 {
-                    Id = enfermedad.EnfermedadId,
+                    Id = enfermedad.IdEnfermedad,
                     Nombre = enfermedad.Enfermedad.Nombre
                 });
             }
@@ -134,7 +133,7 @@ namespace ApiAdministracionPeluqueria.Utilidades
             foreach (var enfermedad in mascota.Enfermedades)
             {
 
-                respuesta.Add(enfermedad.EnfermedadId);
+                respuesta.Add(enfermedad.IdEnfermedad);
 
             }
 
