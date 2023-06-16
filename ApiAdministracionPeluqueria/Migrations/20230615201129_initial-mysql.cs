@@ -373,25 +373,56 @@ namespace ApiAdministracionPeluqueria.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "MascotaEnfermedades",
+                name: "MascotasAlergias",
                 columns: table => new
                 {
+                    IdMascota = table.Column<int>(type: "int", nullable: false),
+                    IdAlergia = table.Column<int>(type: "int", nullable: false),
                     MascotaId = table.Column<int>(type: "int", nullable: false),
-                    EnfermedadId = table.Column<int>(type: "int", nullable: false),
+                    AlergiaId = table.Column<int>(type: "int", nullable: false),
                     IdUsuario = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MascotaEnfermedades", x => new { x.MascotaId, x.EnfermedadId });
+                    table.PrimaryKey("PK_MascotasAlergias", x => new { x.IdMascota, x.IdAlergia });
                     table.ForeignKey(
-                        name: "FK_MascotaEnfermedades_Enfermedades_EnfermedadId",
+                        name: "FK_MascotasAlergias_Alergias_AlergiaId",
+                        column: x => x.AlergiaId,
+                        principalTable: "Alergias",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MascotasAlergias_Mascotas_MascotaId",
+                        column: x => x.MascotaId,
+                        principalTable: "Mascotas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "MascotasEnfermedades",
+                columns: table => new
+                {
+                    IdMascota = table.Column<int>(type: "int", nullable: false),
+                    IdEnfermedad = table.Column<int>(type: "int", nullable: false),
+                    EnfermedadId = table.Column<int>(type: "int", nullable: false),
+                    MascotaId = table.Column<int>(type: "int", nullable: false),
+                    IdUsuario = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MascotasEnfermedades", x => new { x.IdMascota, x.IdEnfermedad });
+                    table.ForeignKey(
+                        name: "FK_MascotasEnfermedades_Enfermedades_EnfermedadId",
                         column: x => x.EnfermedadId,
                         principalTable: "Enfermedades",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_MascotaEnfermedades_Mascotas_MascotaId",
+                        name: "FK_MascotasEnfermedades_Mascotas_MascotaId",
                         column: x => x.MascotaId,
                         principalTable: "Mascotas",
                         principalColumn: "Id",
@@ -484,11 +515,6 @@ namespace ApiAdministracionPeluqueria.Migrations
                 column: "UsuarioId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MascotaEnfermedades_EnfermedadId",
-                table: "MascotaEnfermedades",
-                column: "EnfermedadId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Mascotas_AlergiaId",
                 table: "Mascotas",
                 column: "AlergiaId");
@@ -502,6 +528,26 @@ namespace ApiAdministracionPeluqueria.Migrations
                 name: "IX_Mascotas_RazaId",
                 table: "Mascotas",
                 column: "RazaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MascotasAlergias_AlergiaId",
+                table: "MascotasAlergias",
+                column: "AlergiaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MascotasAlergias_MascotaId",
+                table: "MascotasAlergias",
+                column: "MascotaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MascotasEnfermedades_EnfermedadId",
+                table: "MascotasEnfermedades",
+                column: "EnfermedadId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MascotasEnfermedades_MascotaId",
+                table: "MascotasEnfermedades",
+                column: "MascotaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Turnos_FechaId",
@@ -541,7 +587,10 @@ namespace ApiAdministracionPeluqueria.Migrations
                 name: "Calendarios");
 
             migrationBuilder.DropTable(
-                name: "MascotaEnfermedades");
+                name: "MascotasAlergias");
+
+            migrationBuilder.DropTable(
+                name: "MascotasEnfermedades");
 
             migrationBuilder.DropTable(
                 name: "Turnos");

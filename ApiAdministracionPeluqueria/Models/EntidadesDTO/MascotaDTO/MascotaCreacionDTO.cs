@@ -23,12 +23,12 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO
 
        
         [Required]
-        public List<int> IdEnfermedad { get; set; }
+        public List<int> IdEnfermedades { get; set; }
 
        
 
         [Required]
-        public int IdAlergia { get; set; }
+        public List<int> IdAlergias { get; set; }
 
       
     
