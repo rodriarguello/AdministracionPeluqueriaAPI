@@ -24,9 +24,9 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
 
         public Raza? Raza { get; set; }
 
-        public List<MascotaEnfermedad> Enfermedades { get; set; }
+        public List<MascotaEnfermedad> MascotaEnfermedades { get; set; }
 
-        public List<MascotaAlergia> Alergias { get; set; }  
+        public List<MascotaAlergia> MascotaAlergias { get; set; }  
         
         public List<Turno>? Turno { get; set; }
 

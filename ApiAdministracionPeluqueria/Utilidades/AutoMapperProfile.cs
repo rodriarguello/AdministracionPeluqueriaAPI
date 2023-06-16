@@ -78,9 +78,13 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
             CreateMap<MascotaCreacionDTO,Mascota>();
             CreateMap<Mascota, MascotaSinClienteDTO>()
-                .ForMember(mascotaDTO=> mascotaDTO.Enfermedades, opciones=> opciones.MapFrom(MapMascotaEnfermedadesAenfermedadesDTO))
-                .ForMember(mascotaDTO=>mascotaDTO.IdEnfermedades, opciones => opciones.MapFrom(MapIdEnfermedades));
+                .ForMember(mascotaDTO => mascotaDTO.Enfermedades, opciones => opciones.MapFrom(Map_MascotaEnfermedades_EnfermedadesDTO))
+                .ForMember(mascotaDTO => mascotaDTO.IdEnfermedades, opciones => opciones.MapFrom(MapIdEnfermedades))
+                .ForMember(mascotaDTO=> mascotaDTO.Alergias, opciones=> opciones.MapFrom(Map_MascotaAlergias_AlergiasDTO))
+                .ForMember(mascotaDTO=> mascotaDTO.IdAlergias, opciones=> opciones.MapFrom(MapIdAlergias));
+            
             CreateMap<Mascota, MascotaNombreFechaNacimientoDTO>().ReverseMap();
+            
             CreateMap<MascotaModificarDTO,Mascota>();
 
 
@@ -104,13 +108,14 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
         }
 
-        private List<EnfermedadDTO> MapMascotaEnfermedadesAenfermedadesDTO(Mascota mascota, MascotaSinClienteDTO mascotaSinClienteDTO)
+
+        private List<EnfermedadDTO> Map_MascotaEnfermedades_EnfermedadesDTO(Mascota mascota, MascotaSinClienteDTO mascotaSinClienteDTO)
         {
             var resultado = new List<EnfermedadDTO>(); 
 
-            if(mascota.Enfermedades.Count < 1) return resultado;
+            if(mascota.MascotaEnfermedades.Count < 1) return resultado;
 
-            foreach (var enfermedad in mascota.Enfermedades)
+            foreach (var enfermedad in mascota.MascotaEnfermedades)
             {
                 
                 resultado.Add(new EnfermedadDTO
@@ -128,9 +133,9 @@ namespace ApiAdministracionPeluqueria.Utilidades
         private List<int> MapIdEnfermedades(Mascota mascota, MascotaSinClienteDTO mascotaSinClienteDTO)
         {
             var respuesta = new List<int>();
-            if (mascota.Enfermedades.Count < 1) return respuesta;
+            if (mascota.MascotaEnfermedades.Count < 1) return respuesta;
 
-            foreach (var enfermedad in mascota.Enfermedades)
+            foreach (var enfermedad in mascota.MascotaEnfermedades)
             {
 
                 respuesta.Add(enfermedad.IdEnfermedad);
@@ -141,5 +146,45 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
 
         }
+
+        private List<AlergiaDTO> Map_MascotaAlergias_AlergiasDTO(Mascota mascota, MascotaSinClienteDTO mascotaSinClienteDTO)
+        {
+            var resultado = new List<AlergiaDTO>();
+
+            if (mascota.MascotaAlergias.Count < 1) return resultado;
+
+            foreach (var alergia in mascota.MascotaAlergias)
+            {
+
+                resultado.Add(new AlergiaDTO
+                {
+                    Id = alergia.IdAlergia,
+                    Nombre = alergia.Alergia.Nombre
+                });
+            }
+
+
+            return resultado;
+
+        }
+
+        private List<int> MapIdAlergias(Mascota mascota, MascotaSinClienteDTO mascotaSinClienteDTO)
+        {
+            var respuesta = new List<int>();
+
+            if (mascota.MascotaAlergias.Count < 1) return respuesta;
+
+            foreach (var alergias in mascota.MascotaAlergias)
+            {
+
+                respuesta.Add(alergias.IdAlergia);
+
+            }
+
+            return respuesta;
+
+
+        }
+
     }
 }

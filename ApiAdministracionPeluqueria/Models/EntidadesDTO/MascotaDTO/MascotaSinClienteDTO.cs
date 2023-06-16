@@ -35,9 +35,9 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO
         public List<EnfermedadDTO.EnfermedadDTO> Enfermedades { get; set; }
 
         [Required]
-        public int IdAlergia { get; set; }
+        public List<int> IdAlergias { get; set; }
         
-        public AlergiaDTO.AlergiaDTO? Alergia { get; set; }
+        public List<AlergiaDTO.AlergiaDTO> Alergias { get; set; }
         
         public int? IdTurno { get; set; }
 
