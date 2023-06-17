@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 
 namespace ApiAdministracionPeluqueria.Controllers
 {
@@ -323,44 +324,33 @@ namespace ApiAdministracionPeluqueria.Controllers
                 }
 
 
-                foreach (var enfermedad in nuevasEnfermedades)
+               
+
+                var IdEnfermedadesExistentes = new List<int>();
+
+                //Se extrae el Id de la enfermedad y se lo guarda en una lista
+
+                foreach (var enfermedadExistente in enfermedadesExistentes)
                 {
-
-                    if(enfermedadesExistentes.Count> 0)
-                    {
-
-                        foreach (var enfermedadExistente in enfermedadesExistentes)
-                        {
-                            if (enfermedad.Id == enfermedadExistente.IdEnfermedad)
-                            {
-                                continue;
-                            }
-                            context.Add(new MascotaEnfermedad
-                            {
-                                IdEnfermedad = enfermedad.Id,
-                                IdMascota = mascotaDTO.Id,
-                                Enfermedad = enfermedad,
-                                Mascota = mascota,
-                                IdUsuario = usuario.Id
-                            });
-
-
-                        }
-
-                        continue;
-                    }
-
-                    context.Add(new MascotaEnfermedad
-                    {
-                        IdEnfermedad = enfermedad.Id,
-                        IdMascota = mascotaDTO.Id,
-                        Enfermedad = enfermedad,
-                        Mascota = mascota,
-                        IdUsuario = usuario.Id
-                    });
-
+                    IdEnfermedadesExistentes.Add(enfermedadExistente.IdEnfermedad);
                 }
 
+                //Se compara los valores de la lista con los id de las enfermedades existentes, y cuando no hay igualdad, 
+                //se guarda la enfermedad para cargarla en la base de datos
+                
+                var cargarEnfermedades = nuevasEnfermedades.Where(nuevaEnfermedad => !IdEnfermedadesExistentes.Contains(nuevaEnfermedad.Id)).ToList();
+
+
+                foreach (var enfermedad in cargarEnfermedades)
+                {
+                    context.MascotasEnfermedades.Add(new MascotaEnfermedad{
+                        IdEnfermedad = enfermedad.Id,
+                        Enfermedad = enfermedad,
+                        Mascota = mascota,
+                        IdMascota = mascota.Id,
+                        IdUsuario = usuario.Id
+                    });
+                }
 
                 //ALERGIAS
 
@@ -389,42 +379,29 @@ namespace ApiAdministracionPeluqueria.Controllers
                 }
 
 
-                foreach (var alergia in nuevasAlergias)
+              var idAlergiasExistentes = new List<int>();
+
+
+                foreach(var alergia in alergiasExistentes)
                 {
 
-                    if (alergiasExistentes.Count > 0)
-                    {
+                    idAlergiasExistentes.Add(alergia.IdAlergia);
 
-                        foreach (var alergiaExistente in alergiasExistentes)
-                        {
-                            if (alergia.Id == alergiaExistente.IdAlergia)
-                            {
-                                continue;
-                            }
-                            context.Add(new MascotaAlergia
-                            {
-                                IdAlergia = alergia.Id,
-                                IdMascota = mascotaDTO.Id,
-                                Alergia = alergia,
-                                Mascota = mascota,
-                                IdUsuario = usuario.Id
-                            });
+                }
+
+                var agregarAlergias = nuevasAlergias.Where(nuevaAlergia => !idAlergiasExistentes.Contains(nuevaAlergia.Id)).ToList();
 
 
-                        }
-
-                        continue;
-                    }
-
-                    context.Add(new MascotaAlergia
+                foreach (var alergia in agregarAlergias)
+                {
+                    context.MascotasAlergias.Add(new MascotaAlergia
                     {
                         IdAlergia = alergia.Id,
-                        IdMascota = mascotaDTO.Id,
                         Alergia = alergia,
+                        IdMascota = mascota.Id,
                         Mascota = mascota,
                         IdUsuario = usuario.Id
                     });
-
                 }
 
                 await context.SaveChangesAsync();
@@ -435,7 +412,7 @@ namespace ApiAdministracionPeluqueria.Controllers
             }
             catch (Exception ex)
             {
-                return responseApi.respuestaError(ex.ToString());
+                return responseApi.respuestaError(ex.Message);
             }
 
         }
