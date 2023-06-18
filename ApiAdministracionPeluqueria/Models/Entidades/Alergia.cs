@@ -14,5 +14,8 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         [Required]
         public string IdUsuario { get; set; }
 
+
+        public List<MascotaAlergia> MascotasAlergia { get; set; }
+
     }
 }
