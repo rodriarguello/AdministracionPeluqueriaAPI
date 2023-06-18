@@ -163,11 +163,18 @@ namespace ApiAdministracionPeluqueria.Controllers
                 var email = claimEmail.Value;
                 var usuario = await userManager.FindByEmailAsync(email);
                 
-                var alergia = await context.Alergias.Where(alergia=>alergia.IdUsuario == usuario.Id).FirstOrDefaultAsync(alergia => alergia.Id == id);
+                var alergia = await context.Alergias.Where(alergia=>alergia.IdUsuario == usuario.Id)
+                                                    .Include(alergia=> alergia.MascotasAlergia)
+                                                    .FirstOrDefaultAsync(alergia => alergia.Id == id);
 
                 if (alergia == null) return responseApi.respuestaError("No existe una alergia con el Id especificado");
 
+
+                if (alergia.MascotasAlergia.Count() > 0) return responseApi.respuestaError("No se puede eliminar la alergia porque tiene registros asociados");
+
+
                 context.Alergias.Remove(alergia);
+
                 await context.SaveChangesAsync();
 
                 return responseApi.respuestaExitosa();

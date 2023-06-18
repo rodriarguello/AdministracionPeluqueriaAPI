@@ -157,13 +157,18 @@ namespace ApiAdministracionPeluqueria.Controllers
                 var usuario = await userManager.FindByEmailAsync(email);
 
                 var enfermedad = await context.Enfermedades
-                                       .Where(enfermedad=>enfermedad.IdUsuario == usuario.Id)
+                                       .Where(enfermedad=>enfermedad.IdUsuario == usuario.Id).
+                                       Include(enfermedad=>enfermedad.MascotasEnfermedad)
                                        .FirstOrDefaultAsync(enfermedad => enfermedad.Id == id);
 
                 if (enfermedad == null) return responseApi.respuestaError("No existe una enfermedad con el Id especificado");
+
+                if (enfermedad.MascotasEnfermedad.Count() > 0) return responseApi.respuestaError("No se puede eliminar la enfermedad porque tiene registros asociados");
                     
 
                 context.Enfermedades.Remove(enfermedad);
+
+               
                 await context.SaveChangesAsync();
 
                 return responseApi.respuestaExitosa();
