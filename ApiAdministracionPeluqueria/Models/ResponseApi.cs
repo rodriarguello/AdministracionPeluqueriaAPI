@@ -15,6 +15,13 @@
 
         }
 
+        public ModeloRespuesta respuestaErrorEliminacion(string mensaje)
+        {   
+            var respuesta = new ModeloRespuesta(2,mensaje,null);
+            
+            return respuesta;
+        }
+
         public ModeloRespuesta respuestaError(string mensaje) { 
         
             
