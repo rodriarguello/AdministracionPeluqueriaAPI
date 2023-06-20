@@ -163,7 +163,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (enfermedad == null) return responseApi.respuestaError("No existe una enfermedad con el Id especificado");
 
-                if (enfermedad.MascotasEnfermedad.Count() > 0) return responseApi.respuestaError("No se puede eliminar la enfermedad porque tiene registros asociados");
+                if (enfermedad.MascotasEnfermedad.Count() > 0) return responseApi.respuestaErrorEliminacion("No se puede eliminar la enfermedad porque tiene registros asociados");
                     
 
                 context.Enfermedades.Remove(enfermedad);

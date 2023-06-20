@@ -165,9 +165,13 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-                var raza = await context.Razas.Where(raza=>raza.IdUsuario == usuario.Id).FirstOrDefaultAsync(raza => raza.Id == id);
+                var raza = await context.Razas.Where(raza=>raza.IdUsuario == usuario.Id)
+                                               .Include(raza=>raza.Mascotas)
+                                               .FirstOrDefaultAsync(raza => raza.Id == id);
                 
                 if (raza == null) return responseApi.respuestaError("No existe una raza con el Id especificado");
+
+                if (raza.Mascotas.Count() > 0) return responseApi.respuestaErrorEliminacion("No se puede eliminar la raza porque tiene mascotas asociadas");
 
                 context.Razas.Remove(raza);
 

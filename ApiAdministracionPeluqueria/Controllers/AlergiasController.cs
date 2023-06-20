@@ -170,7 +170,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 if (alergia == null) return responseApi.respuestaError("No existe una alergia con el Id especificado");
 
 
-                if (alergia.MascotasAlergia.Count() > 0) return responseApi.respuestaError("No se puede eliminar la alergia porque tiene registros asociados");
+                if (alergia.MascotasAlergia.Count() > 0) return responseApi.respuestaErrorEliminacion("No se puede eliminar la alergia porque tiene registros asociados");
 
 
                 context.Alergias.Remove(alergia);

@@ -190,9 +190,13 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var usuario = await userManager.FindByEmailAsync(email);
 
-                var cliente = await context.Clientes.Where(cliente=>cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(cliente => cliente.Id == id);
+                var cliente = await context.Clientes.Where(cliente=>cliente.IdUsuario == usuario.Id)
+                                                    .Include(cliente=> cliente.Mascotas)
+                                                    .FirstOrDefaultAsync(cliente => cliente.Id == id);
 
                 if (cliente==null) return responseApi.respuestaError("No existe un cliente con el Id especificado");
+
+                if (cliente.Mascotas.Count() > 0) return responseApi.respuestaErrorEliminacion("No se puede eliminar el cliente porque tiene mascotas asociadas");
 
                 context.Remove(cliente);
                 await context.SaveChangesAsync();
