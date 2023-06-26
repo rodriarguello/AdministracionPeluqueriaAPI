@@ -78,7 +78,7 @@ namespace ApiAdministracionPeluqueria.Utilidades
             #region MASCOTAS
 
             CreateMap<MascotaCreacionDTO,Mascota>();
-            CreateMap<Mascota, MascotaSinClienteDTO>()
+            CreateMap<Mascota, MascotaDTO>()
                 .ForMember(mascotaDTO => mascotaDTO.Enfermedades, opciones => opciones.MapFrom(Map_MascotaEnfermedades_EnfermedadesDTO))
                 .ForMember(mascotaDTO => mascotaDTO.IdEnfermedades, opciones => opciones.MapFrom(MapIdEnfermedades))
                 .ForMember(mascotaDTO=> mascotaDTO.Alergias, opciones=> opciones.MapFrom(Map_MascotaAlergias_AlergiasDTO))
@@ -110,7 +110,7 @@ namespace ApiAdministracionPeluqueria.Utilidades
         }
 
 
-        private List<EnfermedadDTO> Map_MascotaEnfermedades_EnfermedadesDTO(Mascota mascota, MascotaSinClienteDTO mascotaSinClienteDTO)
+        private List<EnfermedadDTO> Map_MascotaEnfermedades_EnfermedadesDTO(Mascota mascota, MascotaDTO mascotaSinClienteDTO)
         {
             var resultado = new List<EnfermedadDTO>(); 
 
@@ -131,7 +131,7 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
         }
 
-        private List<int> MapIdEnfermedades(Mascota mascota, MascotaSinClienteDTO mascotaSinClienteDTO)
+        private List<int> MapIdEnfermedades(Mascota mascota, MascotaDTO mascotaSinClienteDTO)
         {
             var respuesta = new List<int>();
             if (mascota.MascotaEnfermedades.Count < 1) return respuesta;
@@ -148,7 +148,7 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
         }
 
-        private List<AlergiaDTO> Map_MascotaAlergias_AlergiasDTO(Mascota mascota, MascotaSinClienteDTO mascotaSinClienteDTO)
+        private List<AlergiaDTO> Map_MascotaAlergias_AlergiasDTO(Mascota mascota, MascotaDTO mascotaSinClienteDTO)
         {
             var resultado = new List<AlergiaDTO>();
 
@@ -169,7 +169,7 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
         }
 
-        private List<int> MapIdAlergias(Mascota mascota, MascotaSinClienteDTO mascotaSinClienteDTO)
+        private List<int> MapIdAlergias(Mascota mascota, MascotaDTO mascotaSinClienteDTO)
         {
             var respuesta = new List<int>();
 
