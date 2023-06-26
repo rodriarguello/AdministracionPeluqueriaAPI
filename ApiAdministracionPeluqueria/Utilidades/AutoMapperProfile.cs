@@ -60,6 +60,7 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
             CreateMap<TurnoModificarDTO, Turno>().ReverseMap();
             CreateMap<TurnoDTO, Turno>().ReverseMap();
+            CreateMap<Turno, TurnoSinMascotaDTO>().ReverseMap();
             
 
             #endregion
