@@ -1,6 +1,7 @@
 ﻿using ApiAdministracionPeluqueria.Models;
 using ApiAdministracionPeluqueria.Models.Entidades;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -45,14 +46,18 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var usuario = await userManager.FindByEmailAsync(email);
 
-                var mascotas = new List<Mascota>();
+                
 
-                mascotas = await context.Mascotas.Include(mascotas=>mascotas.Cliente)
+                var mascotas = await context.Mascotas.Include(mascotas=>mascotas.Cliente)
                                                  .Include(mascotas=>mascotas.Raza)
                                                  .Include(mascotas=>mascotas.MascotaEnfermedades)
                                                          .ThenInclude(mascotaEnfermedad => mascotaEnfermedad.Enfermedad)
                                                  .Include(mascotas=>mascotas.MascotaAlergias)
                                                           .ThenInclude(mascotaAlergia=> mascotaAlergia.Alergia)
+                                                 .Include(mascotas=> mascotas.Turno)
+                                                  .ThenInclude(turnos=> turnos.Fecha)
+                                                  .Include(mascotas=>mascotas.Turno)
+                                                  .ThenInclude(turnos=>turnos.Horario)
                                                  .Where(mascota=>mascota.IdUsuario == usuario.Id).ToListAsync();
 
 
@@ -61,7 +66,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-                return responseApi.respuestaExitosa(mapper.Map<List<MascotaSinClienteDTO>>(mascotas));
+                return responseApi.respuestaExitosa(mapper.Map<List<MascotaDTO>>(mascotas));
 
 
             }
@@ -98,12 +103,17 @@ namespace ApiAdministracionPeluqueria.Controllers
                             .ThenInclude(mascotaEnfermedad=>mascotaEnfermedad.Enfermedad)
                     
                     .Include(mascota=>mascota.Raza)
+
+                    .Include(mascota=>mascota.Turno)
+                            .ThenInclude(turno=>turno.Fecha)
+                    .Include(mascota=>mascota.Turno)
+                            .ThenInclude(turno=>turno.Horario)
                     
                     .Where(mascotas => mascotas.Id == id).FirstOrDefaultAsync();
 
                 if(mascota == null) return responseApi.respuestaError("No existe una mascota con el Id especificado");
 
-                return responseApi.respuestaExitosa(mapper.Map<MascotaSinClienteDTO>(mascota));
+                return responseApi.respuestaExitosa(mapper.Map<MascotaDTO>(mascota));
 
             }
             catch (Exception ex)
@@ -437,10 +447,14 @@ namespace ApiAdministracionPeluqueria.Controllers
                                                     .Include(mascota=>mascota.MascotaEnfermedades)
                                                     
                                                     .Include(mascota=>mascota.MascotaAlergias)
+
+                                                    .Include(mascota=>mascota.Turno)
                                                     
                                                     .FirstOrDefaultAsync(mascota=>mascota.Id==id);
 
                 if(mascota == null) return responseApi.respuestaError("No existe una mascota con el Id especificado");
+
+                if (mascota.Turno.Count > 0) return responseApi.respuestaErrorEliminacion("Error al eliminar la mascota porque tiene turnos asociados");
 
                 foreach (var mascotaEnfermedad in mascota.MascotaEnfermedades)
                 {
