@@ -1,13 +1,10 @@
-﻿using ApiAdministracionPeluqueria.Models.Entidades;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.RazaDTO;
+﻿using ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
 using System.ComponentModel.DataAnnotations;
 
 namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO
 {
-    public class MascotaSinClienteDTO
+    public class MascotaDTO
     {
         [Required]
         public int Id { get; set; }
@@ -38,10 +35,8 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO
         public List<int> IdAlergias { get; set; }
         
         public List<AlergiaDTO.AlergiaDTO> Alergias { get; set; }
-        
-        public int? IdTurno { get; set; }
-
-        public List<Turno>? Turno { get; set; }
+       
+        public List<TurnoSinMascotaDTO> Turno { get; set; }
 
        
 
