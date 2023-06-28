@@ -1,8 +1,4 @@
-﻿using ApiAdministracionPeluqueria.Models.Entidades;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.RazaDTO;
+﻿using ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
 using System.ComponentModel.DataAnnotations;
 
