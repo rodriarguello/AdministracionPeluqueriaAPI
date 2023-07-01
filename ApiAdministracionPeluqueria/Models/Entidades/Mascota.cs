@@ -28,7 +28,7 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
 
         public List<MascotaAlergia> MascotaAlergias { get; set; }  
         
-        public List<Turno> Turno { get; set; }
+        public List<Turno> Turnos { get; set; }
 
         [Required]
 

@@ -54,9 +54,9 @@ namespace ApiAdministracionPeluqueria.Controllers
                                                          .ThenInclude(mascotaEnfermedad => mascotaEnfermedad.Enfermedad)
                                                  .Include(mascotas=>mascotas.MascotaAlergias)
                                                           .ThenInclude(mascotaAlergia=> mascotaAlergia.Alergia)
-                                                 .Include(mascotas=> mascotas.Turno)
+                                                 .Include(mascotas=> mascotas.Turnos)
                                                   .ThenInclude(turnos=> turnos.Fecha)
-                                                  .Include(mascotas=>mascotas.Turno)
+                                                  .Include(mascotas=>mascotas.Turnos)
                                                   .ThenInclude(turnos=>turnos.Horario)
                                                  .Where(mascota=>mascota.IdUsuario == usuario.Id).ToListAsync();
 
@@ -104,9 +104,9 @@ namespace ApiAdministracionPeluqueria.Controllers
                     
                     .Include(mascota=>mascota.Raza)
 
-                    .Include(mascota=>mascota.Turno)
+                    .Include(mascota=>mascota.Turnos)
                             .ThenInclude(turno=>turno.Fecha)
-                    .Include(mascota=>mascota.Turno)
+                    .Include(mascota=>mascota.Turnos)
                             .ThenInclude(turno=>turno.Horario)
                     
                     .Where(mascotas => mascotas.Id == id).FirstOrDefaultAsync();
@@ -448,13 +448,13 @@ namespace ApiAdministracionPeluqueria.Controllers
                                                     
                                                     .Include(mascota=>mascota.MascotaAlergias)
 
-                                                    .Include(mascota=>mascota.Turno)
+                                                    .Include(mascota=>mascota.Turnos)
                                                     
                                                     .FirstOrDefaultAsync(mascota=>mascota.Id==id);
 
                 if(mascota == null) return responseApi.respuestaError("No existe una mascota con el Id especificado");
 
-                if (mascota.Turno.Count > 0) return responseApi.respuestaErrorEliminacion("Error al eliminar la mascota porque tiene turnos asociados");
+                if (mascota.Turnos.Count > 0) return responseApi.respuestaErrorEliminacion("Error al eliminar la mascota porque tiene turnos asociados");
 
                 foreach (var mascotaEnfermedad in mascota.MascotaEnfermedades)
                 {
