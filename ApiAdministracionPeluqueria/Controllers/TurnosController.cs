@@ -127,6 +127,55 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #endregion
 
+        [HttpGet("cliente/{idCliente:int}")]
+        public async Task<ActionResult<ModeloRespuesta>> MostrarTurnosCliente(int idCliente)
+        {
+            try
+            {
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+                var email = claimEmail.Value;
+
+                var usuario = await userManager.FindByEmailAsync(email);
+
+
+                var mascotasCliente = await context.Clientes
+                    .Where(cliente => cliente.Id == idCliente)
+                    .Include(cliente => cliente.Mascotas)
+                    .FirstOrDefaultAsync(cliente=>cliente.IdUsuario==usuario.Id);
+
+                if (mascotasCliente == null) return responseApi.respuestaError("No existe un cliente con el id especificado");
+                
+                var listaIdsMascotas = new List<int?>();
+
+                if(mascotasCliente.Mascotas.Count() <1) return responseApi.respuestaExitosa(listaIdsMascotas);
+
+
+                mascotasCliente.Mascotas.ForEach(mascota=> listaIdsMascotas.Add(mascota.Id));
+
+                var turnos = await context.Turnos.Where(turno=>turno.IdUsuario==usuario.Id).Where(turno=>listaIdsMascotas.Contains(turno.IdMascota))
+                     .Include(turno=>turno.Mascota)
+                     .Include(turno=>turno.Horario)
+                     .Include(turno=>turno.Fecha)
+                    .ToListAsync();
+
+
+               
+                
+                
+                return responseApi.respuestaExitosa(mapper.Map<List<TurnoDTO>>(turnos));
+
+
+            }
+            catch (Exception ex)
+            {
+                return responseApi.respuestaError(ex.Message);
+            }
+
+
+
+        }
+
 
         #region MODIFICAR TURNO
 

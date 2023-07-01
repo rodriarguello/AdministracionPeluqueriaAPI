@@ -36,7 +36,7 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO
         
         public List<AlergiaDTO.AlergiaDTO> Alergias { get; set; }
        
-        public List<TurnoSinMascotaDTO> Turno { get; set; }
+        public List<TurnoSinMascotaDTO> Turnos { get; set; }
 
        
 
