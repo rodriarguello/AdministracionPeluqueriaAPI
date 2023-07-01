@@ -144,7 +144,12 @@ namespace ApiAdministracionPeluqueria.Controllers
                     .Include(cliente => cliente.Mascotas)
                     .FirstOrDefaultAsync(cliente=>cliente.IdUsuario==usuario.Id);
 
+                if (mascotasCliente == null) return responseApi.respuestaError("No existe un cliente con el id especificado");
+                
                 var listaIdsMascotas = new List<int?>();
+
+                if(mascotasCliente.Mascotas.Count() <1) return responseApi.respuestaExitosa(listaIdsMascotas);
+
 
                 mascotasCliente.Mascotas.ForEach(mascota=> listaIdsMascotas.Add(mascota.Id));
 
