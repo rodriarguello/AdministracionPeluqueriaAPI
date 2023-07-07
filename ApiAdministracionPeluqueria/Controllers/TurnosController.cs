@@ -379,6 +379,19 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (turno.Disponible) return responseApi.respuestaError("El turno esta disponible, por lo cual no se le puede modificar el precio");
 
+
+
+                //Modifica precio en la entidad caja
+                if (turno.Asistio == true)
+                {
+                    var registroCaja = await context.Caja.Where(registro => registro.IdUsuario == usuario.Id).FirstOrDefaultAsync(registro => registro.IdTurno == turno.Id);
+
+                    if (registroCaja != null)
+                    {
+                        registroCaja.Precio = nuevoPrecio;
+                    }
+                }
+
                 turno.Precio = nuevoPrecio;
            
 
