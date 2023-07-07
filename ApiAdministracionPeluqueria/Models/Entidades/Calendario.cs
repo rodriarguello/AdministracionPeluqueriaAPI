@@ -26,5 +26,8 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         public string IdUsuario  { get; set; }
 
         public Usuario Usuario { get; set;}
+
+        public List<Turno> Turnos { get; set; }
+
     }
 }
