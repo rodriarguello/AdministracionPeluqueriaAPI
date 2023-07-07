@@ -303,6 +303,37 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (turno.Asistio == asistio) return responseApi.respuestaError("El turno ya se encuentra con ese estado de asistencia");
 
+                //Agregar Ingreso
+
+                if (turno.Asistio == null && asistio || turno.Asistio == false && asistio)
+                {
+                    Caja nuevoIngreso = new Caja
+                    {
+                        Fecha = turno.Fecha.Dia,
+                        Precio = (decimal)turno.Precio!,
+                        IdUsuario = usuario.Id,
+                        Usuario = usuario,
+                        IdTurno = turno.Id
+
+                    };
+
+                    context.Caja.Add(nuevoIngreso);
+
+
+                }
+
+                //Eliminar Ingreso
+                if (turno.Asistio == true && asistio == false)
+                {
+                    var registroCaja = await context.Caja.Where(caja => caja.IdUsuario == usuario.Id).FirstOrDefaultAsync(caja => caja.IdTurno == turno.Id);
+
+                    if (registroCaja != null)
+                    {
+                        context.Caja.Remove(registroCaja);
+                    }
+                }
+
+
                 turno.Asistio = asistio;
 
                 
