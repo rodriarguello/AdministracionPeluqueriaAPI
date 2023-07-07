@@ -33,6 +33,8 @@ namespace ApiAdministracionPeluqueria.Models
 
         public DbSet<MascotaAlergia> MascotasAlergias { get; set; }
 
+        public DbSet<Caja> Caja { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder builder)
