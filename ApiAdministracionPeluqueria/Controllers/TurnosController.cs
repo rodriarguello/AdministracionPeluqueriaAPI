@@ -1,6 +1,5 @@
 ﻿using ApiAdministracionPeluqueria.Models;
 using ApiAdministracionPeluqueria.Models.Entidades;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.FechaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -257,6 +256,8 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (turno.Disponible) return responseApi.respuestaError("El turno NO estaba reservado");
 
+                if (turno.Asistio == true) return responseApi.respuestaError("El turno no se puede cancelar, porque esta marcado como que la mascota asistió");
+
                 turno.Disponible = true;
                 turno.Asistio = null;
                 turno.Precio = null;
@@ -307,7 +308,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 
                 await context.SaveChangesAsync();
 
-
+                
                 return responseApi.respuestaExitosa();
 
             }
@@ -367,7 +368,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #endregion
 
-
+   
 
 
     }
