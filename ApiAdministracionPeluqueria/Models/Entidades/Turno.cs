@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ApiAdministracionPeluqueria.Models.Entidades
 {
@@ -42,14 +43,19 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
 
         public bool? Asistio { get; set; }
 
-        public int? Precio { get; set; }
+        [Column(TypeName ="decimal(18,2)")]
+        public decimal? Precio { get; set; }
 
         [Required]
         public int IdCalendario { get; set; }
 
+        public Calendario Calendario { get; set; }
+
         [Required]
 
         public string IdUsuario { get; set; }
+
+        
 
 
     }

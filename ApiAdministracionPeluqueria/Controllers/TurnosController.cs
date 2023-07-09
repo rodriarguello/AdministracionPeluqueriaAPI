@@ -1,6 +1,5 @@
 ﻿using ApiAdministracionPeluqueria.Models;
 using ApiAdministracionPeluqueria.Models.Entidades;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.FechaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -257,6 +256,8 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (turno.Disponible) return responseApi.respuestaError("El turno NO estaba reservado");
 
+                if (turno.Asistio == true) return responseApi.respuestaError("El turno no se puede cancelar, porque esta marcado como que la mascota asistió");
+
                 turno.Disponible = true;
                 turno.Asistio = null;
                 turno.Precio = null;
@@ -302,12 +303,43 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (turno.Asistio == asistio) return responseApi.respuestaError("El turno ya se encuentra con ese estado de asistencia");
 
+                //Agregar Ingreso
+
+                if (turno.Asistio == null && asistio || turno.Asistio == false && asistio)
+                {
+                    Caja nuevoIngreso = new Caja
+                    {
+                        Fecha = turno.Fecha.Dia,
+                        Precio = (decimal)turno.Precio!,
+                        IdUsuario = usuario.Id,
+                        Usuario = usuario,
+                        IdTurno = turno.Id
+
+                    };
+
+                    context.Caja.Add(nuevoIngreso);
+
+
+                }
+
+                //Eliminar Ingreso
+                if (turno.Asistio == true && asistio == false)
+                {
+                    var registroCaja = await context.Caja.Where(caja => caja.IdUsuario == usuario.Id).FirstOrDefaultAsync(caja => caja.IdTurno == turno.Id);
+
+                    if (registroCaja != null)
+                    {
+                        context.Caja.Remove(registroCaja);
+                    }
+                }
+
+
                 turno.Asistio = asistio;
 
                 
                 await context.SaveChangesAsync();
 
-
+                
                 return responseApi.respuestaExitosa();
 
             }
@@ -347,6 +379,19 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (turno.Disponible) return responseApi.respuestaError("El turno esta disponible, por lo cual no se le puede modificar el precio");
 
+
+
+                //Modifica precio en la entidad caja
+                if (turno.Asistio == true)
+                {
+                    var registroCaja = await context.Caja.Where(registro => registro.IdUsuario == usuario.Id).FirstOrDefaultAsync(registro => registro.IdTurno == turno.Id);
+
+                    if (registroCaja != null)
+                    {
+                        registroCaja.Precio = nuevoPrecio;
+                    }
+                }
+
                 turno.Precio = nuevoPrecio;
            
 
@@ -367,7 +412,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #endregion
 
-
+   
 
 
     }
