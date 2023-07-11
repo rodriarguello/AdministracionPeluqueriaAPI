@@ -1,6 +1,8 @@
 ﻿using ApiAdministracionPeluqueria.Models;
 using ApiAdministracionPeluqueria.Models.Entidades;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.Autenticacion;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.UsuarioDTO;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,14 +24,18 @@ namespace ApiAdministracionPeluqueria.Controllers
         private readonly UserManager<Usuario> userManager;
         private readonly IConfiguration configuration;
         private readonly SignInManager<Usuario> signInManager;
+        private readonly ResponseApi response;
+        private readonly IMapper mapper;
 
         public CuentasController(ApplicationDbContext context, UserManager<Usuario> userManager, 
-            IConfiguration configuration, SignInManager<Usuario> signInManager)
+            IConfiguration configuration, SignInManager<Usuario> signInManager, ResponseApi response, IMapper mapper)
         {
             this.context = context;
             this.userManager = userManager;
             this.configuration = configuration;
             this.signInManager = signInManager;
+            this.response = response;
+            this.mapper = mapper;
         }
 
 
@@ -37,13 +43,19 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         [HttpPost("registrar")]
         
-        public async Task<ActionResult<RespuestaAutenticacion>> RegistroUsuario(CredencialesUsuario credencialesUsuario)
+        public async Task<ActionResult<RespuestaAutenticacion>> RegistroUsuario(CreacionUsuarioDTO creacionUsuarioDTO)
         {
-            var usuario = new Usuario { UserName = credencialesUsuario.Email, Email = credencialesUsuario.Email };
+            var usuario = new Usuario { UserName = creacionUsuarioDTO.Email,
+                                        Email = creacionUsuarioDTO.Email,
+                                        Nombres = creacionUsuarioDTO.Nombres,
+                                        Apellido = creacionUsuarioDTO.Apellido,
+                                        NombrePeluqueria = creacionUsuarioDTO.NombrePeluqueria,
+                                        FechaCreacion = DateTime.Now
+                                      };
 
-            var resultado = await userManager.CreateAsync(usuario, credencialesUsuario.Password);
+            var resultado = await userManager.CreateAsync(usuario, creacionUsuarioDTO.Password);
 
-            if (resultado.Succeeded) return ConstruirToken(credencialesUsuario);
+            if (resultado.Succeeded) return ConstruirToken(usuario.Email);
             
 
             else return BadRequest(resultado.Errors);
@@ -63,7 +75,7 @@ namespace ApiAdministracionPeluqueria.Controllers
             isPersistent: false, lockoutOnFailure: false);
 
 
-            if (resultado.Succeeded) return ConstruirToken(credencialesUsuario);       
+            if (resultado.Succeeded) return ConstruirToken(credencialesUsuario.Email);       
         
             else return BadRequest("Login Incorrecto");
         
@@ -75,13 +87,32 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #endregion
 
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet]
+        public async Task<ActionResult<ModeloRespuesta>> MostrarDatosUsuario()
+        {   
+
+            var claimEmail = HttpContext.User.Claims.Where(claim=>claim.Type == "email").FirstOrDefault();
+
+            var claimEmailValue = claimEmail.Value;
+
+            var usuario =  await userManager.FindByEmailAsync(claimEmailValue);
+
+            if (usuario == null) return Unauthorized();
+
+            return response.respuestaExitosa(mapper.Map<UsuarioDTO>(usuario));
+
+
+    
+        }
         #region CONSTRUIR TOKEN
 
-        private RespuestaAutenticacion ConstruirToken(CredencialesUsuario credencialesUsuario)
+        private RespuestaAutenticacion ConstruirToken(string email)
         {
             var claims = new List<Claim>()
             {
-                new Claim ("email", credencialesUsuario.Email)
+                new Claim ("email", email)
             };
 
 
@@ -102,12 +133,6 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #endregion
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost("validacion")]
-        public bool ValidarToken()
-        {
-            return true;
-        }
 
 
     }
