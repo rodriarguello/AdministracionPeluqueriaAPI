@@ -8,6 +8,7 @@ using ApiAdministracionPeluqueria.Models.EntidadesDTO.HorarioDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.RazaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.UsuarioDTO;
 using AutoMapper;
 
 namespace ApiAdministracionPeluqueria.Utilidades
@@ -104,6 +105,13 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
             #region HORARIOS
             CreateMap<Horario, HorarioSinCalendarioDTO>().ReverseMap();
+            #endregion
+
+            #region USUARIOS
+
+
+            CreateMap<Usuario, UsuarioDTO>();
+
             #endregion
 
 
