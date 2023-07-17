@@ -134,6 +134,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         [HttpPost]
         public async Task<ActionResult<ModeloRespuesta>> Post([FromBody]MascotaCreacionDTO nuevaMascotaDTO)
         {
+            var transaccion = await context.Database.BeginTransactionAsync();
 
             try
             {
@@ -231,6 +232,8 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 await context.SaveChangesAsync();
 
+                await transaccion.CommitAsync();
+
 
 
 
@@ -238,7 +241,8 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             }
             catch (Exception ex)
-            {
+            {   
+                await transaccion.RollbackAsync();
                 return responseApi.respuestaError(ex.Message);
             }
 
@@ -253,6 +257,8 @@ namespace ApiAdministracionPeluqueria.Controllers
         [HttpPut]
         public async Task<ActionResult<ModeloRespuesta>> ModificarMascota([FromBody]MascotaModificarDTO mascotaDTO)
         {
+            var transaccion = await context.Database.BeginTransactionAsync();
+
             try
             {
                 var claimEmail = HttpContext.User.Claims.Where(claims => claims.Type == "email").FirstOrDefault();
@@ -416,12 +422,15 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 await context.SaveChangesAsync();
 
+                await transaccion.CommitAsync();
+
 
                 return responseApi.respuestaExitosa();
 
             }
             catch (Exception ex)
-            {
+            {   
+                await transaccion.RollbackAsync();
                 return responseApi.respuestaError(ex.Message);
             }
 
@@ -434,7 +443,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ModeloRespuesta>> EliminarMascota([FromRoute]int id)
         {
-
+            var transaccion = await context.Database.BeginTransactionAsync();
 
             try
             {
@@ -469,10 +478,13 @@ namespace ApiAdministracionPeluqueria.Controllers
                 context.Remove(mascota);
                 await context.SaveChangesAsync();
 
+                await transaccion.CommitAsync();
+
                 return responseApi.respuestaExitosa();
             }
             catch (Exception ex)
             {
+                await transaccion.RollbackAsync();
                 return responseApi.respuestaError(ex.Message);
             }
 
