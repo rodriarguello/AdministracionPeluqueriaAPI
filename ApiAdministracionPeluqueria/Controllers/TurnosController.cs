@@ -283,7 +283,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         [HttpPut("asistencia/{id:int}")]
         public async Task<ActionResult<ModeloRespuesta>> ModificarAsistencia([FromRoute] int id, [FromBody] bool asistio)
         {
-
+            var transaccion = await context.Database.BeginTransactionAsync();
             try
             {
                 var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
@@ -339,12 +339,15 @@ namespace ApiAdministracionPeluqueria.Controllers
                 
                 await context.SaveChangesAsync();
 
+                await transaccion.CommitAsync();
+
                 
                 return responseApi.respuestaExitosa();
 
             }
             catch (Exception ex)
-            {
+            {   
+                await transaccion.RollbackAsync();
                 return responseApi.respuestaError(ex.Message);
             }
 
@@ -355,7 +358,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         [HttpPut("precio/{id:int}")]
         public async Task<ActionResult<ModeloRespuesta>> ModificarPrecio([FromRoute] int id, [FromBody] int nuevoPrecio)
         {
-
+            var transaccion = await context.Database.BeginTransactionAsync();
 
             try
             {
@@ -398,12 +401,15 @@ namespace ApiAdministracionPeluqueria.Controllers
                 
                 await context.SaveChangesAsync();
 
+                await transaccion.CommitAsync();
+
                 return responseApi.respuestaExitosa();
 
 
             }
             catch (Exception ex)
             {
+                await transaccion.RollbackAsync();
                 return responseApi.respuestaError(ex.Message);
             }
 
