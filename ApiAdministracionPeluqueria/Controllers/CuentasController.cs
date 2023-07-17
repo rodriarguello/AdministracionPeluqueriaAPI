@@ -68,14 +68,20 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region LOGIN
         [HttpPost("login")]
-        public async Task<ActionResult<RespuestaAutenticacion>> Login(CredencialesUsuario credencialesUsuario)
+        public async Task<ActionResult<ModeloRespuesta>> Login(CredencialesUsuario credencialesUsuario)
         {
             var resultado = await signInManager.PasswordSignInAsync(credencialesUsuario.Email, credencialesUsuario.Password,
 
             isPersistent: false, lockoutOnFailure: false);
 
+            var respuesta = new
+            {
+                credenciales = ConstruirToken(credencialesUsuario.Email),
+                usuario =  mapper.Map<UsuarioDTO>( await userManager.FindByEmailAsync(credencialesUsuario.Email))
+            };
 
-            if (resultado.Succeeded) return ConstruirToken(credencialesUsuario.Email);       
+
+            if (resultado.Succeeded) return response.respuestaExitosa(respuesta);       
         
             else return BadRequest("Login Incorrecto");
         
