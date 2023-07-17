@@ -76,6 +76,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         [HttpPost]
         public async Task<ActionResult<ModeloRespuesta>> CrearCalendario([FromBody] CalendarioCreacionDTO nuevoCalendarioDTO)
         {
+             var transaccion = await context.Database.BeginTransactionAsync();
             try
             {
 
@@ -117,6 +118,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 #endregion
 
 
+
                 TimeSpan horaInicio = new TimeSpan(nuevoCalendarioDTO.HoraInicioTurnos,0,0);
             
                 TimeSpan horaFin = new TimeSpan(nuevoCalendarioDTO.HoraFinTurnos, 0, 0);
@@ -140,7 +142,8 @@ namespace ApiAdministracionPeluqueria.Controllers
                 nuevoCalendario.IdUsuario = usuarioId;
 
                 nuevoCalendario.Usuario = usuario;
-
+                
+                
                 context.Calendarios.Add(nuevoCalendario);
                 await context.SaveChangesAsync();
 
@@ -206,6 +209,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                         Turno nuevoTurno = new Turno(fecha.Id, horario.Id, true , false, nuevoCalendario.Id,usuario.Id);
                         nuevoTurno.Fecha= fecha;
                         nuevoTurno.Horario = horario;
+                        nuevoTurno.Calendario = nuevoCalendario;
 
                         context.Turnos.Add(nuevoTurno);
                     
@@ -221,11 +225,15 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 await context.SaveChangesAsync();
 
+                await transaccion.CommitAsync();
+
                 return responseApi.respuestaExitosa();
 
             }
             catch (Exception ex)
             {
+                await transaccion.RollbackAsync();
+
                 return responseApi.respuestaError(ex.Message);
 
             }
@@ -241,6 +249,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ModeloRespuesta>> Delete([FromRoute]int id)
         {
+            var transaccion = await context.Database.BeginTransactionAsync();
             try
             {
 
@@ -272,12 +281,15 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 await context.SaveChangesAsync();
 
+                await transaccion.CommitAsync();
+
                 
                 return responseApi.respuestaExitosa();
 
             }
             catch (Exception ex)
             {
+                await transaccion.RollbackAsync();
                 return responseApi.respuestaError(ex.Message);
             }
         }
