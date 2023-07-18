@@ -33,11 +33,11 @@ namespace ApiAdministracionPeluqueria.Controllers
 
        
 
-        #region MOSTRAR CALENDARIOS
+        #region MOSTRAR CALENDARIO
 
         [HttpGet]
 
-        public async Task<ActionResult<ModeloRespuesta>> GetCalendarios()
+        public async Task<ActionResult<ModeloRespuesta>> GetCalendario()
         {
 
             try
@@ -49,14 +49,14 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var usuario = await userManager.FindByEmailAsync(email);
 
-                var calendarios = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).ToListAsync();
+                var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).FirstOrDefaultAsync();
 
 
                 
               
                
                 
-                return responseApi.respuestaExitosa(mapper.Map<List<CalendarioDTO>>(calendarios));
+                return responseApi.respuestaExitosa(mapper.Map<CalendarioDTO>(calendario));
             }
             catch (Exception ex)
             {
@@ -102,17 +102,13 @@ namespace ApiAdministracionPeluqueria.Controllers
                 if (nuevoCalendarioDTO.FechaFin <= nuevoCalendarioDTO.FechaInicio) return responseApi.respuestaError("La fecha de fin del calendario no puede ser menor o igual a la fecha de fin");
 
             
-                var calendarios = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuarioId).ToListAsync();
+                var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuarioId).FirstOrDefaultAsync();
 
 
 
-                if (calendarios.Count > 0)
-                {   
-                    if(calendarios.Count == 2) return responseApi.respuestaError("No se puede tener más de 2 calendarios");
+                if (calendario!= null) return responseApi.respuestaError("No se puede tener más de 1 calendario");
 
-                    if (nuevoCalendarioDTO.Nombre.ToUpper() == calendarios[0].Nombre.ToUpper()) return responseApi.respuestaError("No se puede tener 2 calendarios con el mismo nombre");
-
-                }
+                    
 
 
                 #endregion
