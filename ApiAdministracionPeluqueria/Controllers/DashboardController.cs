@@ -59,11 +59,16 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var totalIngresos = ingresos.Sum(ingreso => ingreso.Precio);
 
+                var clientes = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id).ToListAsync();
+
+                var mascotas = await context.Mascotas.Where(mascota=>mascota.IdUsuario == usuario.Id).ToListAsync();
 
                 var dataRespuesta = new
                 {
                     turnos = mapper.Map<List<TurnoDTO>>(turnos),
-                    ingresos = new { cantidadIngresos = ingresos.Count(), total = totalIngresos }
+                    ingresos = new { cantidadIngresos = ingresos.Count, total = totalIngresos },
+                    cantidadClientes = clientes.Count,
+                    cantidadMascotas = mascotas.Count
                 };
 
 
