@@ -55,18 +55,31 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
-                var ingresos = await context.Caja.Where(ingreso => ingreso.IdUsuario == usuario.Id).Where(ingreso => ingreso.Fecha.Date == fechaActual.Date).ToListAsync();
+                var ingresosMensual = await context.Caja.Where(ingreso => ingreso.IdUsuario == usuario.Id).Where(ingreso => ingreso.Fecha.Month == fechaActual.Month).ToListAsync();
 
-                var totalIngresos = ingresos.Sum(ingreso => ingreso.Precio);
+                var totalIngresosMensual = ingresosMensual.Sum(ingreso => ingreso.Precio);
+
+
+                var ingresoDiario = ingresosMensual.Where(ingreso => ingreso.Fecha.Date == fechaActual.Date).ToList();
+
+                var totalIngresoDiario = ingresoDiario.Sum(ingreso => ingreso.Precio);
+
+
+
+
+
 
                 var clientes = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id).ToListAsync();
 
                 var mascotas = await context.Mascotas.Where(mascota=>mascota.IdUsuario == usuario.Id).ToListAsync();
 
+
+
                 var dataRespuesta = new
                 {
                     turnos = mapper.Map<List<TurnoDTO>>(turnos),
-                    ingresos = new { cantidadIngresos = ingresos.Count, total = totalIngresos },
+                    ingresoDiario = new {cantidadIngresos = ingresoDiario.Count, total = totalIngresoDiario },
+                    ingresoMensual = new { cantidadIngresos = ingresosMensual.Count, total = totalIngresosMensual },
                     cantidadClientes = clientes.Count,
                     cantidadMascotas = mascotas.Count
                 };
