@@ -71,7 +71,11 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var clientes = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id).ToListAsync();
 
+                var cantidadClientesNuevosEsteMes = clientes.Where(cliente => cliente.FechaCreacion.Month == fechaActual.Month).Count();
+
                 var mascotas = await context.Mascotas.Where(mascota=>mascota.IdUsuario == usuario.Id).ToListAsync();
+
+                var cantidadMascotasNuevasEsteMes = mascotas.Where(mascota => mascota.FechaCreacion.Month == fechaActual.Month).Count();
 
 
 
@@ -81,7 +85,9 @@ namespace ApiAdministracionPeluqueria.Controllers
                     ingresoDiario = new {cantidadIngresos = ingresoDiario.Count, total = totalIngresoDiario },
                     ingresoMensual = new { cantidadIngresos = ingresosMensual.Count, total = totalIngresosMensual },
                     cantidadClientes = clientes.Count,
-                    cantidadMascotas = mascotas.Count
+                    nuevosClientes = cantidadClientesNuevosEsteMes,
+                    cantidadMascotas = mascotas.Count,
+                    nuevasMascotas = cantidadMascotasNuevasEsteMes
                 };
 
 
