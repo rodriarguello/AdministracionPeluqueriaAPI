@@ -1,11 +1,9 @@
 ﻿using ApiAdministracionPeluqueria.Models;
 using ApiAdministracionPeluqueria.Models.Entidades;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO;
-using ApiAdministracionPeluqueria.Utilidades;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -115,6 +113,9 @@ namespace ApiAdministracionPeluqueria.Controllers
                 var nuevoCliente = mapper.Map<Cliente>(nuevoClienteDTO);
 
                 nuevoCliente.IdUsuario = usuario.Id;
+
+                nuevoCliente.FechaCreacion = DateTime.Now;
+
                 context.Add(nuevoCliente);
 
 
@@ -148,8 +149,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 var usuario = await userManager.FindByEmailAsync(email);
 
                 var cliente = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id)
-                    .Include(cliente=>cliente.Mascotas)
-                    .FirstOrDefaultAsync(cliente => cliente.Id == clienteDTO.Id);
+                                .FirstOrDefaultAsync(cliente => cliente.Id == clienteDTO.Id);
 
 
 
@@ -157,9 +157,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (cliente == null) return responseApi.respuestaError("No existe un cliente con Id especificado");
 
-                cliente = mapper.Map(clienteDTO,cliente);
-
-
+                cliente = mapper.Map<Cliente>(clienteDTO);
+                
+                
                 await context.SaveChangesAsync();
 
                 return responseApi.respuestaExitosa();
