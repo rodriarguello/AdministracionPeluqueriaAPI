@@ -183,6 +183,8 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 nuevaMascota.IdUsuario = usuario.Id;
 
+                nuevaMascota.FechaCreacion = DateTime.Now;
+
                 context.Mascotas.Add(nuevaMascota);
 
 
@@ -267,14 +269,19 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var usuario = await userManager.FindByEmailAsync(email);
 
-                var existeMascota = await context.Mascotas.Where(mascota=>mascota.IdUsuario == usuario.Id).AnyAsync(mascota=>mascota.Id == mascotaDTO.Id);
+                var mascota = await context.Mascotas.Where(mascota=>mascota.IdUsuario == usuario.Id)
+                                
 
-                if (!existeMascota) return responseApi.respuestaError("No existe una mascota con el Id especificado");
+                            .FirstOrDefaultAsync(mascota=>mascota.Id == mascotaDTO.Id);
+
+                if (mascota==null) return responseApi.respuestaError("No existe una mascota con el Id especificado");
 
 
                 var cliente = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(cliente => cliente.Id == mascotaDTO.IdCliente);
 
                 if (cliente == null) return responseApi.respuestaError("No existe un Cliente con el Id especificado");
+
+
 
                 var raza = await context.Razas.Where(razas => razas.IdUsuario == usuario.Id).FirstOrDefaultAsync(razas => razas.Id == mascotaDTO.IdRaza);
 
@@ -301,19 +308,12 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
 
+                mascota.IdCliente = mascotaDTO.IdCliente;
+                mascota.IdRaza = mascotaDTO.IdRaza;
+                mascota.Nombre = mascotaDTO.Nombre;
+                mascota.FechaNacimiento = mascotaDTO.FechaNacimiento;
 
-
-                var mascota = mapper.Map<Mascota>(mascotaDTO);
-
-                mascota.Cliente = cliente;
-                
-                mascota.Raza = raza;
-
-
-                mascota.IdUsuario = usuario.Id;
-
-                context.Update(mascota);
-                
+                                
                 //ENFERMEDADES
 
                 var enfermedadesEliminar = await context.MascotasEnfermedades
