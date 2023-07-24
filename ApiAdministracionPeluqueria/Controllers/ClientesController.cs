@@ -157,7 +157,11 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (cliente == null) return responseApi.respuestaError("No existe un cliente con Id especificado");
 
-                cliente = mapper.Map<Cliente>(clienteDTO);
+               
+
+                cliente.Nombre = clienteDTO.Nombre;
+                cliente.Email = clienteDTO.Email;
+                cliente.Telefono = clienteDTO.Telefono;
                 
                 
                 await context.SaveChangesAsync();
