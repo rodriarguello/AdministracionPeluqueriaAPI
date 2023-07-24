@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ApiAdministracionPeluqueria.Models.Entidades
 {
@@ -33,5 +35,9 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         [Required]
 
         public string IdUsuario { get; set; }
+        
+        [Required]
+        [Column(TypeName = "date")]
+        public DateTime FechaCreacion { get; set; }
     }
 }
