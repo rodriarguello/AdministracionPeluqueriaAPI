@@ -10,10 +10,9 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
 
         }
 
-        public Turno (int idFecha, int idHorario, bool disponible, bool asistio, int idCalendario, string idUsuario)
+        public Turno (bool disponible, bool asistio, int idCalendario, string idUsuario)
         {
-            IdFecha = idFecha;
-            IdHorario = idHorario;
+            
             Disponible = disponible;
             Asistio = asistio;
             IdCalendario = idCalendario;
@@ -23,15 +22,15 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         [Key]
         [Required]
         public int Id { get; set; }
+        
         [Required]
-        public int IdFecha { get; set; }
+        [Column(TypeName = "date")]
+        public DateTime Fecha { get; set; }
 
-        public Fecha Fecha { get; set; }
-
+        
         [Required]
-        public int IdHorario { get; set; }
-
-        public Horario Horario { get; set;}
+        [Column(TypeName = "TIME(0)")]
+        public TimeSpan Horario { get; set; }
 
         [Required]
         public bool Disponible { get; set; }
