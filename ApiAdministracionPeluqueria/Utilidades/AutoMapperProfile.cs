@@ -3,8 +3,6 @@ using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.CalendarioDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.FechaDTO;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.HorarioDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.MascotaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.RazaDTO;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
@@ -92,20 +90,6 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
             #endregion
 
-
-
-            #region FECHAS
-
-            CreateMap<Fecha,FechaSinCalendarioDTO>();
-
-            #endregion
-
-
-
-
-            #region HORARIOS
-            CreateMap<Horario, HorarioSinCalendarioDTO>().ReverseMap();
-            #endregion
 
             #region USUARIOS
 
