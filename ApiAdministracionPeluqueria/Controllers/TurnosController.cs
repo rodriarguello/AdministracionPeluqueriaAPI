@@ -107,7 +107,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                     .Include(turnos => turnos.Fecha)
                     .Include(turnos => turnos.Horario)
                     .Include(turnos => turnos.Mascota)
-                    .Where(turnos=> turnos.Fecha.Dia>=nuevaFechaInicio && turnos.Fecha.Dia <=nuevaFechaFin)
+                    .Where(turnos=> turnos.Fecha.Date>=nuevaFechaInicio.Date && turnos.Fecha.Date <=nuevaFechaFin.Date)
                     .ToListAsync();
 
 
@@ -154,9 +154,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var turnos = await context.Turnos.Where(turno=>turno.IdUsuario==usuario.Id).Where(turno=>listaIdsMascotas.Contains(turno.IdMascota))
                      .Include(turno=>turno.Mascota)
-                     .Include(turno=>turno.Horario)
-                     .Include(turno=>turno.Fecha)
-                    .ToListAsync();
+                     .ToListAsync();
 
 
                
@@ -292,8 +290,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
                 var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    .Include(turno=>turno.Fecha)
-                    .Include(turno=>turno.Horario)
+                    
                     .Include(turno=>turno.Mascota)
                     .FirstOrDefaultAsync(turno => turno.Id == id);
 
@@ -309,7 +306,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 {
                     Caja nuevoIngreso = new Caja
                     {
-                        Fecha = turno.Fecha.Dia,
+                        Fecha = turno.Fecha,
                         Precio = (decimal)turno.Precio!,
                         IdUsuario = usuario.Id,
                         Usuario = usuario,
@@ -372,8 +369,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
                 var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    .Include(turno=>turno.Fecha)
-                    .Include(turno=>turno.Horario)
+                    
                     .Include(turno=>turno.Mascota)
                     .FirstOrDefaultAsync(turno => turno.Id == id);
 

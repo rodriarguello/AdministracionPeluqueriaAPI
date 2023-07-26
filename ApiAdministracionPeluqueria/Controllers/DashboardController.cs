@@ -50,7 +50,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                     .Include(turnos => turnos.Fecha)
                     .Include(turnos => turnos.Horario)
                     .Include(turnos => turnos.Mascota)
-                    .Where(turnos => turnos.Fecha.Dia.Date == fechaActual.Date)
+                    .Where(turnos => turnos.Fecha.Date == fechaActual.Date)
                 .ToListAsync();
 
 
