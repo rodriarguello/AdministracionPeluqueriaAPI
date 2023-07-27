@@ -46,13 +46,17 @@ namespace ApiAdministracionPeluqueria.Controllers
                 var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).
                     FirstOrDefaultAsync();
 
-                var turnos = await context.Turnos.Where(turnos => turnos.IdCalendario == calendario.Id)
-                    .Include(turnos => turnos.Fecha)
-                    .Include(turnos => turnos.Horario)
-                    .Include(turnos => turnos.Mascota)
-                    .Where(turnos => turnos.Fecha.Date == fechaActual.Date)
-                .ToListAsync();
+                var turnos = new List<Turno>();
 
+                if(calendario!= null) { 
+                
+                    turnos = await context.Turnos.Where(turnos => turnos.IdCalendario == calendario.Id)
+                        .Include(turnos => turnos.Mascota)
+                        .Where(turnos => turnos.Fecha.Date == fechaActual.Date)
+                        .ToListAsync();
+
+                
+                }
 
 
                 var ingresosMensual = await context.Caja.Where(ingreso => ingreso.IdUsuario == usuario.Id).Where(ingreso => ingreso.Fecha.Month == fechaActual.Month).ToListAsync();

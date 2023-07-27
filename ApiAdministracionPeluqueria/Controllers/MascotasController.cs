@@ -54,10 +54,6 @@ namespace ApiAdministracionPeluqueria.Controllers
                                                          .ThenInclude(mascotaEnfermedad => mascotaEnfermedad.Enfermedad)
                                                  .Include(mascotas=>mascotas.MascotaAlergias)
                                                           .ThenInclude(mascotaAlergia=> mascotaAlergia.Alergia)
-                                                 .Include(mascotas=> mascotas.Turnos)
-                                                  .ThenInclude(turnos=> turnos.Fecha)
-                                                  .Include(mascotas=>mascotas.Turnos)
-                                                  .ThenInclude(turnos=>turnos.Horario)
                                                  .Where(mascota=>mascota.IdUsuario == usuario.Id).ToListAsync();
 
 
@@ -104,10 +100,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                     
                     .Include(mascota=>mascota.Raza)
 
-                    .Include(mascota=>mascota.Turnos)
-                            .ThenInclude(turno=>turno.Fecha)
-                    .Include(mascota=>mascota.Turnos)
-                            .ThenInclude(turno=>turno.Horario)
+                    
                     
                     .Where(mascotas => mascotas.Id == id).FirstOrDefaultAsync();
 
@@ -309,7 +302,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
                 mascota.IdCliente = mascotaDTO.IdCliente;
+                mascota.Cliente = cliente;
                 mascota.IdRaza = mascotaDTO.IdRaza;
+                mascota.Raza = raza;
                 mascota.Nombre = mascotaDTO.Nombre;
                 mascota.FechaNacimiento = mascotaDTO.FechaNacimiento;
 

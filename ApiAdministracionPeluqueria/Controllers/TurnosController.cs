@@ -104,8 +104,6 @@ namespace ApiAdministracionPeluqueria.Controllers
                 if (calendario == null) return responseApi.respuestaError("No existe un calendario con el Id especificado para este usuario");
 
                 var turnos = await context.Turnos.Where(turnos => turnos.IdCalendario == calendarioId)
-                    .Include(turnos => turnos.Fecha)
-                    .Include(turnos => turnos.Horario)
                     .Include(turnos => turnos.Mascota)
                     .Where(turnos=> turnos.Fecha.Date>=nuevaFechaInicio.Date && turnos.Fecha.Date <=nuevaFechaFin.Date)
                     .ToListAsync();
@@ -192,8 +190,6 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
                 var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    .Include(turno=>turno.Fecha)
-                    .Include(turno=>turno.Horario)
                     .Include(turno=>turno.Mascota)
                     .FirstOrDefaultAsync(turno => turno.Id == id);
 
@@ -245,8 +241,6 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
                 var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    .Include(turno=>turno.Fecha)
-                    .Include(turno=>turno.Horario)
                     .Include(turno=>turno.Mascota)
                     .FirstOrDefaultAsync(turno=>turno.Id == id);
 
@@ -290,7 +284,6 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
                 var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    
                     .Include(turno=>turno.Mascota)
                     .FirstOrDefaultAsync(turno => turno.Id == id);
 
@@ -369,7 +362,6 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
                 var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    
                     .Include(turno=>turno.Mascota)
                     .FirstOrDefaultAsync(turno => turno.Id == id);
 
