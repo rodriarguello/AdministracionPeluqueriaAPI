@@ -29,5 +29,7 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
 
         public List<Turno> Turnos { get; set; }
 
+        public int CantidadHorarios { get; set; }
+
     }
 }
