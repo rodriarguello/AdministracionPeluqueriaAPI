@@ -85,10 +85,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         {
             try
             {
-                var existeCalendario = await context.Calendarios.AnyAsync(calendario => calendario.Id == calendarioId);
-
-                if (!existeCalendario) return responseApi.respuestaError("No existe un calendario con el Id especificado");
-
+                
                 var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
                 var email = claimEmail.Value;
@@ -109,9 +106,37 @@ namespace ApiAdministracionPeluqueria.Controllers
                     .ToListAsync();
 
 
-                if(turnos.Count == 0) return responseApi.respuestaError("No existen turnos en esa fecha");
+               
 
-                return responseApi.respuestaExitosa(mapper.Map<List<TurnoDTO>>(turnos));
+
+                var listLunes = mapper.Map<List<TurnoDTO>>(turnos.Where(turno=>turno.Fecha.DayOfWeek == DayOfWeek.Monday).ToList());
+
+                var listMartes = mapper.Map<List<TurnoDTO>>(turnos.Where(turno=>turno.Fecha.DayOfWeek == DayOfWeek.Tuesday).ToList());
+
+                var listMiercoles = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Wednesday).ToList());
+
+                var listJueves = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Thursday).ToList());
+
+                var listViernes = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Friday).ToList());
+
+                var listSabado = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Saturday).ToList());
+
+                var listDomingo = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Sunday).ToList());
+
+
+
+
+                return responseApi.respuestaExitosa(new
+                {
+                    lunes= listLunes,
+                    martes = listMartes,
+                    miercoles = listMiercoles,
+                    jueves = listJueves, 
+                    viernes = listViernes, 
+                    sabado = listSabado,
+                    domingo = listDomingo,
+                    cantidadHorarios = calendario.CantidadHorarios
+                });
 
 
             }
