@@ -170,7 +170,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                     listHorarios.Add(horaInicio);
 
-                    horaInicio = horaInicio + intervalo;
+                    horaInicio +=  intervalo;
 
                 }
 
@@ -198,7 +198,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 #endregion
 
-
+                nuevoCalendario.CantidadHorarios = listHorarios.Count;
 
                 //Guardar los turnos cargados en la base de datos
 
@@ -222,10 +222,14 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #endregion
 
+
+
         #region MODIFICAR CALENDARIO
 
-        [HttpPut]
-        public async Task<ActionResult<ModeloRespuesta>> ModificarDatosCalendario(CalendarioCreacionDTO calendarioDTO)
+        #region MODIFICAR NOMBRE CALENDARIO
+
+        [HttpPut("modificarnombre")]
+        public async Task<ActionResult<ModeloRespuesta>> ModificarNombreCalendario(string nuevoNombre)
         {
             try
             {
@@ -240,140 +244,10 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (calendario == null) return responseApi.respuestaError("El usuario no posee ningún calendario");
 
-                if (calendarioDTO.IntervaloTurnos < 10) return responseApi.respuestaError("El intervalo entre turnos tiene que ser de 10 minutos como mínimo");
-
-                if (calendarioDTO.HoraFinTurnos < calendarioDTO.HoraInicioTurnos) return responseApi.respuestaError("La hora de fin no puede ser menor que la hora de inicio");
+                calendario.Nombre = nuevoNombre;
 
 
-                TimeSpan horaInicio = new TimeSpan(calendarioDTO.HoraInicioTurnos, 0, 0);
-
-                TimeSpan horaFin = new TimeSpan(calendarioDTO.HoraFinTurnos, 0, 0);
-
-                TimeSpan intervalo = new TimeSpan(0, calendarioDTO.IntervaloTurnos, 0);
-
-
-                calendario.Nombre = calendarioDTO.Nombre;
-                
-                
-                calendario.FechaFin = calendarioDTO.FechaFin;
-
-                //Modificacion invervalo entre turnos
-
-                if (calendario.IntervaloTurnos != intervalo || calendario.HoraInicioTurnos != horaInicio || calendario.HoraFinTurnos != horaFin)
-                {
-                    var turnos = await context.Turnos
-                        .Where(turno => turno.IdUsuario == usuario.Id)
-                        .Where(turno => turno.Fecha.Date > DateTime.Now.Date)
-                        .ToListAsync();
-
-
-                    var turnosTomados = turnos.Where(turno => turno.Disponible == true).ToList();
-
-                    if (turnosTomados.Count > 0) return responseApi.respuestaError("No se puede modificar el intervalo o la hora de inicio o la hora de fin porque" +
-                                                                            "ya hay turnos tomados y se van a perder. " +
-                                                                            "Primero se deben eliminar o reasignar esos turnos.");
-
-
-                    foreach (var turno in turnos)
-                    {
-
-                        context.Remove(turno);
-
-                    }
-
-                    #region CARGAR DIAS
-
-                    DateTime fechaCargar = DateTime.Now;
-
-                    //var listFechas = new List<Fecha>();
-                    //while (fechaCargar <= calendarioDTO.FechaFin)
-                    //{
-                    //    var fecha = new Fecha();
-
-                    //    fecha.Dia = fechaCargar;
-
-                    //    fecha.IdCalendario = calendario.Id;
-
-                    //    context.Fechas.Add(fecha);
-                    //    listFechas.Add(fecha);
-
-                    //    fechaCargar = fechaCargar.AddDays(1);
-                    //}
-
-                    #endregion
-
-
-                    #region CARGAR HORARIOS
-
-                    //No hace falta cargar los horarios ni las fechas en la base de datos- Se va a hacer mucho quilombo a la hora de agregar mas turnos o cambiar los intervalos
-
-                    var listHorarios = new List<TimeSpan>();
-
-                    while (horaInicio < horaFin)
-                    {
-                        //Horario horario = new Horario();
-
-                        //horario.Hora = horaInicio;
-
-                        //horario.IdCalendario = calendario.Id;
-
-                        //context.Horarios.Add(horario);
-
-                        listHorarios.Add(horaInicio);
-
-                        horaInicio = horaInicio + intervalo;
-
-                    }
-
-                    #endregion
-
-                    //Guardar los dias y horarios cargados en la Base de Datos
-
-                    //await context.SaveChangesAsync();
-
-
-
-                    //Buscar los dias y horarios en la base de datos
-                    //var fechas = await context.Fechas.Where(fecha => fecha.IdCalendario == calendario.Id).Where(fecha=>fecha.Dia.Date>fechaCargar.Date).ToListAsync();
-                    //var horarios = await context.Horarios.Where(horario => horario.IdCalendario == calendario.Id).ToListAsync();
-
-                    #region GENERAR TURNOS
-
-
-                    //Por cada dia cargado, se generan los turnos con cada horario disponible
-                    
-                    //var listTurnos = new List<Turno>();
-                    //listFechas.ForEach(fecha =>
-                    //{
-                    //    listHorarios.ForEach(horario =>
-                    //    {
-                    //        Turno nuevoTurno = new Turno(fecha.Id, horario.Hours, true, false, calendario.Id, usuario.Id);
-                            
-                            
-                    //        listTurnos.Add(nuevoTurno);
-                    //        //context.Turnos.Add(nuevoTurno);
-
-                    //    });
-
-                    //});
-
-                    #endregion
-
-
-
-
-
-
-
-
-
-                }
-
-
-
-
-
-
+                await context.SaveChangesAsync();
 
                 return responseApi.respuestaExitosa(mapper.Map<CalendarioDTO>(calendario));
             }
@@ -386,20 +260,181 @@ namespace ApiAdministracionPeluqueria.Controllers
            
         }
 
-        [HttpPut("/hola")]
-        public async Task<ActionResult> AgregarTurnos()
-        {
-            return Ok();
-        }
+        #endregion
 
-        [HttpPut("chau")]
-        public async Task<ActionResult> EliminarTurnos()
+
+
+        #region AGREGAR TURNOS
+
+        [HttpPost("agregarturnos/{nuevaFechaFin}")]
+        public async Task<ActionResult<ModeloRespuesta>> AgregarTurnos([FromRoute]DateTime nuevaFechaFin)
         {
-            return Ok();
+            var transaccion = await context.Database.BeginTransactionAsync();
+            try
+            {
+
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+                var email = claimEmail.Value;
+
+                var usuario = await userManager.FindByEmailAsync(email);
+
+
+                var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).FirstOrDefaultAsync();
+
+                if (calendario == null) return responseApi.respuestaError("El usuario no posee un calendario");
+
+                if (calendario.FechaFin.Date > nuevaFechaFin.Date) return responseApi.respuestaError("La fecha enviada es anterior a la fecha actual de finalización");
+
+                
+                #region CARGAR DIAS
+
+                DateTime fechaCargar = calendario.FechaFin.AddDays(1);
+
+                var listFechas = new List<DateTime>();
+
+                while (fechaCargar.Date <= nuevaFechaFin.Date)
+                {
+                    listFechas.Add(fechaCargar);
+
+                    fechaCargar = fechaCargar.AddDays(1);
+                }
+
+                #endregion
+
+
+                #region CARGAR HORARIOS
+
+                var horaInicio = calendario.HoraInicioTurnos;
+
+                var intervalo = calendario.IntervaloTurnos;
+
+                var listHorarios = new List<TimeSpan>();
+
+                while (horaInicio < calendario.HoraFinTurnos)
+                {
+
+
+                    listHorarios.Add(horaInicio);
+
+                    horaInicio += intervalo;
+
+                }
+
+                #endregion
+
+
+                #region GENERAR TURNOS
+
+
+                ////Por cada dia cargado, se generan los turnos con cada horario disponible
+                listFechas.ForEach(fecha =>
+                {
+                    listHorarios.ForEach(horario =>
+                    {
+                        Turno nuevoTurno = new Turno(true, false, calendario.Id, usuario.Id);
+
+                        nuevoTurno.Fecha = fecha;
+                        nuevoTurno.Horario = horario;
+                        nuevoTurno.Calendario = calendario;
+                        context.Turnos.Add(nuevoTurno);
+
+                    });
+
+                });
+
+
+
+                #endregion
+
+                calendario.FechaFin = nuevaFechaFin;
+
+                await context.SaveChangesAsync();
+
+                await transaccion.CommitAsync();
+
+                return responseApi.respuestaExitosa(mapper.Map<CalendarioDTO>(calendario));
+
+
+            }
+            catch (Exception ex)
+            {   
+                await transaccion.RollbackAsync();
+                return responseApi.respuestaError(ex.Message);
+            }
+
+            
         }
 
         #endregion
 
+
+
+        #region ELIMINAR TURNOS
+
+
+        [HttpPut("eliminarturnos/{nuevaFechaFin}")]
+        public async Task<ActionResult<ModeloRespuesta>> EliminarTurnos([FromRoute] DateTime nuevaFechaFin)
+        {
+            var transaccion = await context.Database.BeginTransactionAsync();
+            try
+            {
+
+                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+
+                var email = claimEmail.Value;
+
+                var usuario = await userManager.FindByEmailAsync(email);
+
+
+                var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).FirstOrDefaultAsync();
+
+                if (calendario == null) return responseApi.respuestaError("El usuario no posee un calendario");
+
+                if (calendario.FechaFin.Date < nuevaFechaFin.Date) return responseApi.respuestaError("La fecha enviada es superior a la fecha actual de finalización");
+
+                var turnosEliminar = await context.Turnos
+                            .Where(turno => turno.IdCalendario == calendario.Id)
+                            .Where(turno=>turno.Fecha.Date>nuevaFechaFin.Date)
+                            .ToListAsync();
+
+                foreach (Turno turno in turnosEliminar)
+                {
+
+                    if (turno.Disponible == false) return responseApi.respuestaErrorEliminacion("No se puede eliminar alguno de los turnos ya que estan ocupados. Primero debe reorganizar esos turnos");
+                    context.Remove(turno);
+
+                }
+
+
+               
+
+                calendario.FechaFin = nuevaFechaFin;
+
+                await context.SaveChangesAsync();
+
+                await transaccion.CommitAsync();
+
+                return responseApi.respuestaExitosa(mapper.Map<CalendarioDTO>(calendario));
+
+
+            }
+            catch (Exception ex)
+            {
+                await transaccion.RollbackAsync();
+                return responseApi.respuestaError(ex.Message);
+            }
+        }
+
+
+        #endregion
+
+        
+        
+        #endregion
+
+
+        
         #region ELIMINAR CALENDARIO 
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ModeloRespuesta>> Delete([FromRoute]int id)
