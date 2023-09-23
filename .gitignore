@@ -3,3 +3,6 @@
 obj/
 bin/
 .suo
+appsettings.json
+appsettings.Development.json
+
