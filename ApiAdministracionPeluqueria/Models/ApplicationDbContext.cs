@@ -17,10 +17,6 @@ namespace ApiAdministracionPeluqueria.Models
 
         public DbSet<Enfermedad> Enfermedades { get; set; }
 
-        public DbSet<Fecha> Fechas { get; set; }
-
-        public DbSet<Horario> Horarios { get; set; }
-
         public DbSet<Mascota> Mascotas { get; set; }
 
         public DbSet<Raza> Razas { get; set; }

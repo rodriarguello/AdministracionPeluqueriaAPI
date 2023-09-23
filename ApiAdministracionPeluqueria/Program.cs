@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,12 +23,13 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
 
-string connectionString = builder.Configuration.GetConnectionString("mySql");
-var serverVersion = new MySqlServerVersion(new Version(8,0,33));
+//string connectionString = builder.Configuration.GetConnectionString("mySql");
+//var serverVersion = new MySqlServerVersion(new Version(8,0,33));
 
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(connectionString,serverVersion));
+//builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(connectionString,serverVersion));
 
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("conexionSql")));
 
 #region CONFIGURACION JWT
 
@@ -87,7 +89,18 @@ builder.Services.AddSwaggerGen(options =>
 
 
 
-builder.Services.AddCors(opciones=> opciones.AddPolicy("Free", politica=>politica.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+builder.Services.AddCors(opciones=> {
+
+    opciones.AddPolicy("Free", policy =>
+    {
+        policy.AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+
+});
+
+
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
@@ -95,6 +108,8 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 builder.Services.AddIdentity<Usuario, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
 builder.Services.AddTransient<ResponseApi>();
+
+builder.Services.AddScoped<DbInicializador>();
 
 
 var app = builder.Build();
@@ -106,11 +121,32 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseCors("Free");
 app.UseHttpsRedirection();
 
-app.UseCors("Free");
 
 app.UseAuthorization();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+
+    try
+    {
+        var dbInicializador = services.GetRequiredService<DbInicializador>();
+
+        dbInicializador.InicializarDb();
+    }
+    catch (Exception ex)
+    {
+        var logger = loggerFactory.CreateLogger<Program>();
+
+        logger.LogError(ex, "Error al realizar las migraciones");
+    }
+}
 
 app.MapControllers();
 

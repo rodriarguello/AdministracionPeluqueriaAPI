@@ -85,10 +85,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         {
             try
             {
-                var existeCalendario = await context.Calendarios.AnyAsync(calendario => calendario.Id == calendarioId);
-
-                if (!existeCalendario) return responseApi.respuestaError("No existe un calendario con el Id especificado");
-
+                
                 var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
                 var email = claimEmail.Value;
@@ -104,16 +101,42 @@ namespace ApiAdministracionPeluqueria.Controllers
                 if (calendario == null) return responseApi.respuestaError("No existe un calendario con el Id especificado para este usuario");
 
                 var turnos = await context.Turnos.Where(turnos => turnos.IdCalendario == calendarioId)
-                    .Include(turnos => turnos.Fecha)
-                    .Include(turnos => turnos.Horario)
                     .Include(turnos => turnos.Mascota)
-                    .Where(turnos=> turnos.Fecha.Dia>=nuevaFechaInicio && turnos.Fecha.Dia <=nuevaFechaFin)
+                    .Where(turnos=> turnos.Fecha.Date>=nuevaFechaInicio.Date && turnos.Fecha.Date <=nuevaFechaFin.Date)
                     .ToListAsync();
 
 
-                if(turnos.Count == 0) return responseApi.respuestaError("No existen turnos en esa fecha");
+               
 
-                return responseApi.respuestaExitosa(mapper.Map<List<TurnoDTO>>(turnos));
+
+                var listLunes = mapper.Map<List<TurnoDTO>>(turnos.Where(turno=>turno.Fecha.DayOfWeek == DayOfWeek.Monday).ToList());
+
+                var listMartes = mapper.Map<List<TurnoDTO>>(turnos.Where(turno=>turno.Fecha.DayOfWeek == DayOfWeek.Tuesday).ToList());
+
+                var listMiercoles = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Wednesday).ToList());
+
+                var listJueves = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Thursday).ToList());
+
+                var listViernes = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Friday).ToList());
+
+                var listSabado = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Saturday).ToList());
+
+                var listDomingo = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Sunday).ToList());
+
+
+
+
+                return responseApi.respuestaExitosa(new
+                {
+                    lunes= listLunes,
+                    martes = listMartes,
+                    miercoles = listMiercoles,
+                    jueves = listJueves, 
+                    viernes = listViernes, 
+                    sabado = listSabado,
+                    domingo = listDomingo,
+                    cantidadHorarios = calendario.CantidadHorarios
+                });
 
 
             }
@@ -154,9 +177,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var turnos = await context.Turnos.Where(turno=>turno.IdUsuario==usuario.Id).Where(turno=>listaIdsMascotas.Contains(turno.IdMascota))
                      .Include(turno=>turno.Mascota)
-                     .Include(turno=>turno.Horario)
-                     .Include(turno=>turno.Fecha)
-                    .ToListAsync();
+                     .ToListAsync();
 
 
                
@@ -194,8 +215,6 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
                 var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    .Include(turno=>turno.Fecha)
-                    .Include(turno=>turno.Horario)
                     .Include(turno=>turno.Mascota)
                     .FirstOrDefaultAsync(turno => turno.Id == id);
 
@@ -247,8 +266,6 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
                 var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    .Include(turno=>turno.Fecha)
-                    .Include(turno=>turno.Horario)
                     .Include(turno=>turno.Mascota)
                     .FirstOrDefaultAsync(turno=>turno.Id == id);
 
@@ -292,8 +309,6 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
                 var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    .Include(turno=>turno.Fecha)
-                    .Include(turno=>turno.Horario)
                     .Include(turno=>turno.Mascota)
                     .FirstOrDefaultAsync(turno => turno.Id == id);
 
@@ -309,7 +324,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 {
                     Caja nuevoIngreso = new Caja
                     {
-                        Fecha = turno.Fecha.Dia,
+                        Fecha = turno.Fecha,
                         Precio = (decimal)turno.Precio!,
                         IdUsuario = usuario.Id,
                         Usuario = usuario,
@@ -372,8 +387,6 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
                 var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    .Include(turno=>turno.Fecha)
-                    .Include(turno=>turno.Horario)
                     .Include(turno=>turno.Mascota)
                     .FirstOrDefaultAsync(turno => turno.Id == id);
 
