@@ -54,6 +54,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                                                          .ThenInclude(mascotaEnfermedad => mascotaEnfermedad.Enfermedad)
                                                  .Include(mascotas=>mascotas.MascotaAlergias)
                                                           .ThenInclude(mascotaAlergia=> mascotaAlergia.Alergia)
+                                                 .Include(mascota => mascota.Turnos)
                                                  .Where(mascota=>mascota.IdUsuario == usuario.Id).ToListAsync();
 
 
