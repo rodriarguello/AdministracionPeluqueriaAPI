@@ -105,7 +105,7 @@ builder.Services.AddCors(opciones=> {
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 
-builder.Services.AddIdentity<Usuario, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+builder.Services.AddIdentity<Usuario, IdentityRole>( options=> options.Password.RequireNonAlphanumeric = false).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
 builder.Services.AddTransient<ResponseApi>();
 
