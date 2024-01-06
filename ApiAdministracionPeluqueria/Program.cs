@@ -10,6 +10,9 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Options;
+using ApiAdministracionPeluqueria.Services.Interfaces;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
+using ApiAdministracionPeluqueria.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -110,6 +113,7 @@ builder.Services.AddIdentity<Usuario, IdentityRole>( options=> options.Password.
 builder.Services.AddTransient<ResponseApi>();
 
 builder.Services.AddScoped<DbInicializador>();
+builder.Services.AddScoped<IGenericService<AlergiaCreacionDTO,AlergiaDTO>,AlergiaService>();
 
 
 var app = builder.Build();
