@@ -7,6 +7,10 @@ using ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using ApiAdministracionPeluqueria.Services.Interfaces;
+using ApiAdministracionPeluqueria.Exceptions;
+using ApiAdministracionPeluqueria.Services;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
 
 namespace ApiAdministracionPeluqueria.Controllers
 {
@@ -15,18 +19,12 @@ namespace ApiAdministracionPeluqueria.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class EnfermedadesController : ControllerBase
     {
-        private readonly ApplicationDbContext context;
-        private readonly IMapper mapper;
-        private readonly UserManager<Usuario> userManager;
-        private readonly ResponseApi responseApi;
+        private readonly IGenericService<EnfermedadCreacionDTO, EnfermedadDTO> _enfermedadService;
 
         #region Constructor
-        public EnfermedadesController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager, ResponseApi responseApi)
+        public EnfermedadesController(IGenericService<EnfermedadCreacionDTO, EnfermedadDTO> enfermedadService)
         {
-            this.context = context;
-            this.mapper = mapper;
-            this.userManager = userManager;
-            this.responseApi = responseApi;
+            _enfermedadService = enfermedadService;
         }
 
         #endregion
@@ -41,22 +39,18 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             try
             {
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var claimId = HttpContext.User.Claims.Where(claim => claim.Type == "id").FirstOrDefault();
 
-                var email = claimEmail.Value;
+                var id = claimId.Value;
 
-                var usuario = await userManager.FindByEmailAsync(email);
-
-
-                var enfermedades = await context.Enfermedades.Where(enfermedad => enfermedad.IdUsuario == usuario.Id).ToListAsync();
-
+                var enfermedades = await _enfermedadService.GetAllByIdUser(id);
     
-                return responseApi.respuestaExitosa(mapper.Map<List<EnfermedadDTO>>(enfermedades));
+                return Ok(enfermedades);
 
             }
             catch (Exception ex)
             {
-                return responseApi.respuestaError(ex.Message);
+                return StatusCode(500,"Error interno del servidor");
             }
 
         }
@@ -74,27 +68,27 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             try
             {
-            
                 var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-
                 var email = claimEmail.Value;
 
-                var usuario = await userManager.FindByEmailAsync(email);
+                var nuevaEnfermedad = await _enfermedadService.Create(nuevaEnfermedadDTO, email);
 
-                var nuevaEnfermedad = mapper.Map<Enfermedad>(nuevaEnfermedadDTO);
 
-                nuevaEnfermedad.IdUsuario = usuario.Id;
-
-            
-                context.Enfermedades.Add(nuevaEnfermedad);
-            
-                await context.SaveChangesAsync();
-
-                return responseApi.respuestaExitosa(mapper.Map<EnfermedadDTO>(nuevaEnfermedad));
+                return Ok(nuevaEnfermedad);
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
-                return responseApi.respuestaError(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (MensajePersonalizadoException ex)
+            {
+                return StatusCode(499, ex.Message);
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500, "Error interno del servidor");
+
             }
 
         }
@@ -105,37 +99,29 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region MODIFICAR ENFERMEDAD
 
-        [HttpPut]
-        public async Task<ActionResult<ModeloRespuesta>> Put([FromBody] EnfermedadDTO enfermedadDTO)
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<ModeloRespuesta>> Put([FromBody] EnfermedadCreacionDTO enfermedadDTO, [FromRoute]int id)
         {
 
             try
             {
+
                 var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
                 var email = claimEmail.Value;
-                var usuario = await userManager.FindByEmailAsync(email);
 
-                bool existe = await context.Enfermedades
-                                    .Where(enfermedad => enfermedad.IdUsuario == usuario.Id)
-                                    .AnyAsync(enfermedad => enfermedad.Id == enfermedadDTO.Id);
+                var enfermedadModificada = await _enfermedadService.Update(id, enfermedadDTO, email);
 
-                if (!existe) return responseApi.respuestaError("No existe una enfermedad con el Id especificado");
-
-
-            
-                var enfermedad = mapper.Map<Enfermedad>(enfermedadDTO);
-                enfermedad.IdUsuario = usuario.Id;
-
-                
-                context.Enfermedades.Update(enfermedad);
-                await context.SaveChangesAsync();
-
-
-                return responseApi.respuestaExitosa();
+                return Ok(enfermedadModificada);
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
-                return  responseApi.respuestaError(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500, "Error interno del servidor");
+
             }
 
         }
@@ -154,29 +140,24 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
                 var email = claimEmail.Value;
-                var usuario = await userManager.FindByEmailAsync(email);
 
-                var enfermedad = await context.Enfermedades
-                                       .Where(enfermedad=>enfermedad.IdUsuario == usuario.Id).
-                                       Include(enfermedad=>enfermedad.MascotasEnfermedad)
-                                       .FirstOrDefaultAsync(enfermedad => enfermedad.Id == id);
+                await _enfermedadService.Delete(id, email);
 
-                if (enfermedad == null) return responseApi.respuestaError("No existe una enfermedad con el Id especificado");
+                return NoContent();
 
-                if (enfermedad.MascotasEnfermedad.Count() > 0) return responseApi.respuestaErrorEliminacion("No se puede eliminar la enfermedad porque tiene registros asociados");
-                    
-
-                context.Enfermedades.Remove(enfermedad);
-
-               
-                await context.SaveChangesAsync();
-
-                return responseApi.respuestaExitosa();
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
-                return responseApi.respuestaError(ex.Message);
-                
+                return BadRequest(ex.Message);
+            }
+            catch (MensajePersonalizadoException ex)
+            {
+                return StatusCode(499, ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+
             }
         }
 
