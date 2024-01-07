@@ -14,6 +14,7 @@ using ApiAdministracionPeluqueria.Services.Interfaces;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
 using ApiAdministracionPeluqueria.Services;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.RazaDTO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -116,6 +117,7 @@ builder.Services.AddTransient<ResponseApi>();
 builder.Services.AddScoped<DbInicializador>();
 builder.Services.AddScoped<IGenericService<AlergiaCreacionDTO,AlergiaDTO>,AlergiaService>();
 builder.Services.AddScoped<IGenericService<EnfermedadCreacionDTO,EnfermedadDTO>, EnfermedadService>();
+builder.Services.AddScoped<IGenericService<RazaCreacionDTO,RazaDTO>,RazaService>();
 
 
 var app = builder.Build();
