@@ -40,7 +40,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var idUsuario = claimId.Value;
 
-                var alergias = await _alergiaService.GetByIdUser(idUsuario);
+                var alergias = await _alergiaService.GetAllByIdUser(idUsuario);
                 
                 return Ok(alergias);
             }
@@ -96,7 +96,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MODIFICAR ALERGIA
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> Put([FromBody] AlergiaCreacionDTO alergiaCreacionDTO, [FromRoute] int idAlergia)
+        public async Task<ActionResult<ModeloRespuesta>> Put([FromBody] AlergiaCreacionDTO alergiaCreacionDTO, [FromRoute] int id)
         {
             try
             {
@@ -104,7 +104,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
                 var email = claimEmail.Value;
 
-                var alergiaModificada = await _alergiaService.Update(idAlergia, alergiaCreacionDTO, email);
+                var alergiaModificada = await _alergiaService.Update(id, alergiaCreacionDTO, email);
 
                 return Ok(alergiaModificada);
             }
