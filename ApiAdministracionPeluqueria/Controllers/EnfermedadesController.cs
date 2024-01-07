@@ -34,7 +34,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MOSTRAR ENFERMEDADES
 
         [HttpGet]
-        public async Task<ActionResult<ModeloRespuesta>> Get()
+        public async Task<ActionResult<List<EnfermedadDTO>>> Get()
         {
 
             try
@@ -63,7 +63,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region INSERTAR ENFERMEDAD
 
         [HttpPost]
-        public async Task<ActionResult<ModeloRespuesta>> Post([FromBody] EnfermedadCreacionDTO nuevaEnfermedadDTO)
+        public async Task<ActionResult<EnfermedadDTO>> Post([FromBody] EnfermedadCreacionDTO nuevaEnfermedadDTO)
         {
 
             try
@@ -100,7 +100,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MODIFICAR ENFERMEDAD
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> Put([FromBody] EnfermedadCreacionDTO enfermedadDTO, [FromRoute]int id)
+        public async Task<ActionResult<EnfermedadDTO>> Put([FromBody] EnfermedadCreacionDTO enfermedadDTO, [FromRoute]int id)
         {
 
             try
@@ -132,7 +132,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region ELIMINAR ENFERMEDAD
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> Delete([FromRoute] int id)
+        public async Task<ActionResult> Delete([FromRoute] int id)
         {
 
             try

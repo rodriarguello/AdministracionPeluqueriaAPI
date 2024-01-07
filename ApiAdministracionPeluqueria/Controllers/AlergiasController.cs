@@ -31,7 +31,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MOSTRAR ALERGIAS
 
         [HttpGet]
-        public async Task<ActionResult<ModeloRespuesta>> Get()
+        public async Task<ActionResult<List<AlergiaDTO>>> Get()
         {
 
             try
@@ -60,7 +60,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region INSERTAR ALERGIA
 
         [HttpPost]
-        public async Task<ActionResult<ModeloRespuesta>> Post([FromBody]AlergiaCreacionDTO nuevaAlergiaDTO)
+        public async Task<ActionResult<AlergiaDTO>> Post([FromBody]AlergiaCreacionDTO nuevaAlergiaDTO)
         {
             try
             {
@@ -96,7 +96,7 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MODIFICAR ALERGIA
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> Put([FromBody] AlergiaCreacionDTO alergiaCreacionDTO, [FromRoute] int id)
+        public async Task<ActionResult<AlergiaDTO>> Put([FromBody] AlergiaCreacionDTO alergiaCreacionDTO, [FromRoute] int id)
         {
             try
             {
@@ -126,7 +126,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region ELIMINAR ALERGIA
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> Delete([FromRoute]int id)
+        public async Task<ActionResult> Delete([FromRoute]int id)
         {
 
             try
