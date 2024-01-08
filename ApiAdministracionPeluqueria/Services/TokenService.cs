@@ -1,4 +1,4 @@
-﻿using ApiAdministracionPeluqueria.Models.EntidadesDTO.Autenticacion;
+﻿using ApiAdministracionPeluqueria.Models.EntidadesDTO.Auth;
 using ApiAdministracionPeluqueria.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,7 +15,7 @@ namespace ApiAdministracionPeluqueria.Services
         {
             _configuration = configuration;
         }
-        public RespuestaAutenticacion ConstruirToken(string email, string idUsuario)
+        public string ConstruirToken(string email, string idUsuario)
         {
             var claims = new List<Claim>()
             {
@@ -32,11 +32,7 @@ namespace ApiAdministracionPeluqueria.Services
 
             var token = new JwtSecurityToken(issuer: null, audience: null, claims: claims, expires: expiracion, signingCredentials: creds);
 
-            return new RespuestaAutenticacion()
-            {
-                Token = new JwtSecurityTokenHandler().WriteToken(token),
-                Expiracion = expiracion
-            };
+            return new JwtSecurityTokenHandler().WriteToken(token);
 
 
         }

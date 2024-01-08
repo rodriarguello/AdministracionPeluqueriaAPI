@@ -1,9 +1,9 @@
-﻿using ApiAdministracionPeluqueria.Models.EntidadesDTO.Autenticacion;
+﻿using ApiAdministracionPeluqueria.Models.EntidadesDTO.Auth;
 
 namespace ApiAdministracionPeluqueria.Services.Interfaces
 {
     public interface ITokenService
     {
-        RespuestaAutenticacion ConstruirToken(string email, string idUsuario);
+        string ConstruirToken(string email, string idUsuario);
     }
 }
