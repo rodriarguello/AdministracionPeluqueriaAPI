@@ -23,6 +23,9 @@ namespace ApiAdministracionPeluqueria.Services
             _mapper = mapper;
             _userManager = userManager;
         }
+        public abstract Task Delete(int idEntidad, string emailUsuario);
+
+
         public async Task<TEntidadDTO> Create(TCreacionDTO dtoCreacion, string emailUsuario)
         {
             var nuevoRegistro = _mapper.Map<TEntidad>(dtoCreacion);
@@ -31,7 +34,7 @@ namespace ApiAdministracionPeluqueria.Services
 
             if (usuario == null) throw new BadRequestException("No existe un usuario con el id especificado");
 
-            var existe = await _context.Alergias.Where(x => x.Nombre == dtoCreacion.Nombre).AnyAsync();
+            var existe = await _context.Set<TEntidad>().Where(x => x.Nombre == dtoCreacion.Nombre).AnyAsync();
 
             if (existe) throw new MensajePersonalizadoException("Ya existe un registro con ese nombre");
 
@@ -44,27 +47,7 @@ namespace ApiAdministracionPeluqueria.Services
             return _mapper.Map<TEntidadDTO>(nuevoRegistro);
         }
 
-        public abstract Task Delete(int idEntidad, string emailUsuario);
-        //{
-            //var usuario = await _userManager.FindByEmailAsync(emailUsuario);
-
-            //if (usuario == null) throw new BadRequestException("No existe un usuario con el id especificado");
-
-            //var alergia = await _context.Set<TEntidad>().Where(alergia => alergia.IdUsuario == usuario.Id)
-            //                                    .Include(alergia => alergia.MascotasAlergia)
-            //                                    .FirstOrDefaultAsync(alergia => alergia.Id == idEntidad);
-
-            //if (alergia == null) throw new BadRequestException("No existe una alergia con el id especificado");
-
-
-            //if (alergia.MascotasAlergia.Count() > 0) throw new MensajePersonalizadoException("No se puede eliminar porque tiene mascotas asociadas");
-
-            //_context.Remove(alergia);
-
-            //await _context.SaveChangesAsync();
-        //}
-
-
+    
         public async Task<List<TEntidadDTO>> GetAllByIdUser(string idUsuario)
         {
             var registros = await _context.Set<TEntidad>().Where(alergia => alergia.IdUsuario == idUsuario).ToListAsync();
