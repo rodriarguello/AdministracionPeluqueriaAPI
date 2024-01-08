@@ -118,6 +118,9 @@ builder.Services.AddScoped<DbInicializador>();
 builder.Services.AddScoped<IGenericService<AlergiaCreacionDTO,AlergiaDTO>,AlergiaService>();
 builder.Services.AddScoped<IGenericService<EnfermedadCreacionDTO,EnfermedadDTO>, EnfermedadService>();
 builder.Services.AddScoped<IGenericService<RazaCreacionDTO,RazaDTO>,RazaService>();
+builder.Services.AddScoped<ICuentaService,CuentaService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddSingleton<ITokenService,TokenService>();
 
 
 var app = builder.Build();
