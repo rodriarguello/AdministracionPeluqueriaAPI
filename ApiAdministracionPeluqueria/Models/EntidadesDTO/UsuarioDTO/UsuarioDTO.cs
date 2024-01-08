@@ -3,6 +3,7 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.UsuarioDTO
 {
     public class UsuarioDTO
     {
+        public string Id { get; set; }
         public string Email { get; set; }
         
         public string Nombres { get; set; }

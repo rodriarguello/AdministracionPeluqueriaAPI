@@ -40,7 +40,7 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Alergias");
+                    b.ToTable("Alergias", (string)null);
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Caja", b =>
@@ -71,7 +71,7 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Caja");
+                    b.ToTable("Caja", (string)null);
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Calendario", b =>
@@ -115,7 +115,7 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Calendarios");
+                    b.ToTable("Calendarios", (string)null);
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Cliente", b =>
@@ -146,7 +146,7 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Clientes");
+                    b.ToTable("Clientes", (string)null);
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Enfermedad", b =>
@@ -167,7 +167,7 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Enfermedades");
+                    b.ToTable("Enfermedades", (string)null);
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Mascota", b =>
@@ -210,7 +210,7 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     b.HasIndex("RazaId");
 
-                    b.ToTable("Mascotas");
+                    b.ToTable("Mascotas", (string)null);
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.MascotaAlergia", b =>
@@ -237,7 +237,7 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     b.HasIndex("MascotaId");
 
-                    b.ToTable("MascotasAlergias");
+                    b.ToTable("MascotasAlergias", (string)null);
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.MascotaEnfermedad", b =>
@@ -264,7 +264,7 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     b.HasIndex("MascotaId");
 
-                    b.ToTable("MascotasEnfermedades");
+                    b.ToTable("MascotasEnfermedades", (string)null);
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Raza", b =>
@@ -285,7 +285,7 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Razas");
+                    b.ToTable("Razas", (string)null);
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Turno", b =>
@@ -333,7 +333,7 @@ namespace ApiAdministracionPeluqueria.Migrations
 
                     b.HasIndex("MascotaId");
 
-                    b.ToTable("Turnos");
+                    b.ToTable("Turnos", (string)null);
                 });
 
             modelBuilder.Entity("ApiAdministracionPeluqueria.Models.Entidades.Usuario", b =>

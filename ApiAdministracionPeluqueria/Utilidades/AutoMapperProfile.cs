@@ -95,6 +95,7 @@ namespace ApiAdministracionPeluqueria.Utilidades
 
 
             CreateMap<Usuario, UsuarioDTO>();
+            CreateMap<CreacionUsuarioDTO, Usuario>();
 
             #endregion
 
