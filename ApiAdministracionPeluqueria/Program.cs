@@ -120,7 +120,8 @@ builder.Services.AddScoped<IGenericService<EnfermedadCreacionDTO,EnfermedadDTO>,
 builder.Services.AddScoped<IGenericService<RazaCreacionDTO,RazaDTO>,RazaService>();
 builder.Services.AddScoped<ICuentaService,CuentaService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddSingleton<ITokenService,TokenService>();
+builder.Services.AddScoped<ITokenService,TokenService>();
+builder.Services.AddScoped<ICajaService, CajaService>();
 
 
 var app = builder.Build();
