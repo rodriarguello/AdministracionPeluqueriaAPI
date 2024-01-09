@@ -322,7 +322,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 if (turno.Asistio == null && asistio || turno.Asistio == false && asistio)
                 {
-                    Caja nuevoIngreso = new Caja
+                    var nuevoIngreso = new Ingreso
                     {
                         Fecha = turno.Fecha,
                         Precio = (decimal)turno.Precio!,
@@ -332,7 +332,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                     };
 
-                    context.Caja.Add(nuevoIngreso);
+                    context.Ingresos.Add(nuevoIngreso);
 
 
                 }
@@ -340,11 +340,11 @@ namespace ApiAdministracionPeluqueria.Controllers
                 //Eliminar Ingreso
                 if (turno.Asistio == true && asistio == false)
                 {
-                    var registroCaja = await context.Caja.Where(caja => caja.IdUsuario == usuario.Id).FirstOrDefaultAsync(caja => caja.IdTurno == turno.Id);
+                    var registroCaja = await context.Ingresos.Where(caja => caja.IdUsuario == usuario.Id).FirstOrDefaultAsync(caja => caja.IdTurno == turno.Id);
 
                     if (registroCaja != null)
                     {
-                        context.Caja.Remove(registroCaja);
+                        context.Ingresos.Remove(registroCaja);
                     }
                 }
 
@@ -400,7 +400,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 //Modifica precio en la entidad caja
                 if (turno.Asistio == true)
                 {
-                    var registroCaja = await context.Caja.Where(registro => registro.IdUsuario == usuario.Id).FirstOrDefaultAsync(registro => registro.IdTurno == turno.Id);
+                    var registroCaja = await context.Ingresos.Where(registro => registro.IdUsuario == usuario.Id).FirstOrDefaultAsync(registro => registro.IdTurno == turno.Id);
 
                     if (registroCaja != null)
                     {

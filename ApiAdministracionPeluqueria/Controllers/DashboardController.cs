@@ -59,7 +59,7 @@ namespace ApiAdministracionPeluqueria.Controllers
                 }
 
 
-                var ingresosMensual = await context.Caja.Where(ingreso => ingreso.IdUsuario == usuario.Id).Where(ingreso => ingreso.Fecha.Month == fechaActual.Month).ToListAsync();
+                var ingresosMensual = await context.Ingresos.Where(ingreso => ingreso.IdUsuario == usuario.Id).Where(ingreso => ingreso.Fecha.Month == fechaActual.Month).ToListAsync();
 
                 var totalIngresosMensual = ingresosMensual.Sum(ingreso => ingreso.Precio);
 
