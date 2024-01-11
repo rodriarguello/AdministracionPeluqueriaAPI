@@ -9,7 +9,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.Extensions.Options;
 using ApiAdministracionPeluqueria.Services.Interfaces;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
 using ApiAdministracionPeluqueria.Services;
@@ -122,6 +121,8 @@ builder.Services.AddScoped<ICuentaService,CuentaService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService,TokenService>();
 builder.Services.AddScoped<ICajaService, CajaService>();
+builder.Services.AddScoped<ITurnoService, TurnoService>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
 
 
 var app = builder.Build();
