@@ -1,4 +1,6 @@
-﻿using ApiAdministracionPeluqueria.Models;
+﻿using ApiAdministracionPeluqueria.Exceptions;
+using ApiAdministracionPeluqueria.Models;
+using ApiAdministracionPeluqueria.Models.Entidades;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.IngresoDTO;
 using ApiAdministracionPeluqueria.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -9,10 +11,12 @@ namespace ApiAdministracionPeluqueria.Services
     public class CajaService:ICajaService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IUserService _userService;
 
-        public CajaService(ApplicationDbContext context)
+        public CajaService(ApplicationDbContext context, IUserService userService)
         {
             _context = context;
+            _userService = userService;
         }
 
 
@@ -74,6 +78,50 @@ namespace ApiAdministracionPeluqueria.Services
             };
 
             return respuesta;
+        }
+
+        public async Task CrearIngresoAsync(DateTime fecha, decimal precio, string usuarioId, int idTurno)
+        {
+            var usuario = await _userService.GetByIdAsync(usuarioId);
+
+            if (usuario == null) throw new BadRequestException("No existe un usuario con el id especificado"); 
+            var nuevoIngreso = new Ingreso
+            {
+                Fecha = fecha,
+                Precio = precio,
+                IdUsuario = usuario.Id,
+                Usuario = usuario,
+                IdTurno = idTurno
+
+            };
+
+            _context.Ingresos.Add(nuevoIngreso);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task EliminarIngresoAsync(int idTurno, string idUsuario)
+        {
+            var registroCaja = await _context.Ingresos.Where(caja => caja.IdUsuario == idUsuario).FirstOrDefaultAsync(caja => caja.IdTurno == idTurno);
+
+            if (registroCaja != null)
+            {
+                _context.Ingresos.Remove(registroCaja);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task ModificarPrecioIngresoAsync(int idTurno, string idUsuario, decimal nuevoPrecio)
+        {
+            var registroCaja = await _context.Ingresos.Where(registro => registro.IdUsuario == idUsuario).FirstOrDefaultAsync(registro => registro.IdTurno == idTurno);
+
+            if (registroCaja == null) throw new BadRequestException("No existe un registro con el idTurno especificado");
+            
+            registroCaja.Precio = nuevoPrecio;
+
+            await _context.SaveChangesAsync();
+
         }
     }
 }

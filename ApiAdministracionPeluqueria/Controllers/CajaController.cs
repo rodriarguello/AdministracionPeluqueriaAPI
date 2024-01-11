@@ -1,5 +1,4 @@
 ﻿using ApiAdministracionPeluqueria.Exceptions;
-using ApiAdministracionPeluqueria.Models;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.IngresoDTO;
 using ApiAdministracionPeluqueria.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -44,14 +43,14 @@ namespace ApiAdministracionPeluqueria.Controllers
         }
 
         [HttpGet("{anio:int}/{mes:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> GetIngresoMensual(int anio, int mes)
+        public async Task<ActionResult<ResIngresos>> GetIngresoMensual(int anio, int mes)
         {
 
             try
             {
                 var idUsuario = ExtraerIdClaim();
 
-                var ingresos = await _cajaService.GetIngresoMensualAsync(anio, mes, idUsuario);
+                var ingresos = await _cajaService.GetIngresoMensualAsync(mes, anio, idUsuario);
 
                 return Ok(ingresos);
 
@@ -68,7 +67,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
         [HttpGet("{anio:int}/{mes:int}/{dia:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> GetIngresoDiario(int anio, int mes, int dia)
+        public async Task<ActionResult<ResIngresos>> GetIngresoDiario(int anio, int mes, int dia)
         {
             try
             {
