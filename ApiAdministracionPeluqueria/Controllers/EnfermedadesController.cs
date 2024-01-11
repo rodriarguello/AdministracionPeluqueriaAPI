@@ -1,16 +1,9 @@
-﻿using ApiAdministracionPeluqueria.Models.Entidades;
-using ApiAdministracionPeluqueria.Models;
-using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using ApiAdministracionPeluqueria.Services.Interfaces;
 using ApiAdministracionPeluqueria.Exceptions;
-using ApiAdministracionPeluqueria.Services;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
 
 namespace ApiAdministracionPeluqueria.Controllers
 {
@@ -39,11 +32,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             try
             {
-                var claimId = HttpContext.User.Claims.Where(claim => claim.Type == "id").FirstOrDefault();
+                var id = ExtraerClaim("id");
 
-                var id = claimId.Value;
-
-                var enfermedades = await _enfermedadService.GetAllByIdUser(id);
+                var enfermedades = await _enfermedadService.GetAllByIdUserAsync(id);
     
                 return Ok(enfermedades);
 
@@ -68,10 +59,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             try
             {
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = claimEmail.Value;
+                var email = ExtraerClaim("email");
 
-                var nuevaEnfermedad = await _enfermedadService.Create(nuevaEnfermedadDTO, email);
+                var nuevaEnfermedad = await _enfermedadService.CreateAsync(nuevaEnfermedadDTO, email);
 
 
                 return Ok(nuevaEnfermedad);
@@ -105,11 +95,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             try
             {
+                var email = ExtraerClaim("email");
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = claimEmail.Value;
-
-                var enfermedadModificada = await _enfermedadService.Update(id, enfermedadDTO, email);
+                var enfermedadModificada = await _enfermedadService.UpdateAsync(id, enfermedadDTO, email);
 
                 return Ok(enfermedadModificada);
             }
@@ -138,10 +126,9 @@ namespace ApiAdministracionPeluqueria.Controllers
             try
             {
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = claimEmail.Value;
+                var email = ExtraerClaim("email");
 
-                await _enfermedadService.Delete(id, email);
+                await _enfermedadService.DeleteAsync(id, email);
 
                 return NoContent();
 
@@ -163,5 +150,11 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #endregion
 
+
+        private string ExtraerClaim(string tipoClaim)
+        {
+            var claim = HttpContext.User.Claims.Where(claim => claim.Type == tipoClaim).FirstOrDefault();
+            return claim.Value;
+        }
     }
 }

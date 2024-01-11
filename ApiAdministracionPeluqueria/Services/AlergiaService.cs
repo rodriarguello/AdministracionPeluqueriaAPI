@@ -20,7 +20,7 @@ namespace ApiAdministracionPeluqueria.Services
         }
 
 
-        public override async Task Delete(int idAlergia, string emailUsuario)
+        public override async Task DeleteAsync(int idAlergia, string emailUsuario)
         {
             var usuario = await _userManager.FindByEmailAsync(emailUsuario);
 

@@ -3,12 +3,12 @@ namespace ApiAdministracionPeluqueria.Services.Interfaces
 {
     public interface IGenericService<TCreacionDTO, TDTO>
     {
-        Task<List<TDTO>> GetAllByIdUser(string idUsuario);
+        Task<List<TDTO>> GetAllByIdUserAsync(string idUsuario);
 
-        Task <TDTO> Create(TCreacionDTO dtoCreacion, string emailUsuario);
+        Task <TDTO> CreateAsync(TCreacionDTO dtoCreacion, string emailUsuario);
 
-        Task<TDTO> Update(int idEntidad, TCreacionDTO dtoCreacion, string email);
+        Task<TDTO> UpdateAsync(int idEntidad, TCreacionDTO dtoCreacion, string emailUsuario);
 
-        Task Delete (int idEntidad, string emailUsuario);
+        Task DeleteAsync (int idEntidad, string emailUsuario);
     }
 }

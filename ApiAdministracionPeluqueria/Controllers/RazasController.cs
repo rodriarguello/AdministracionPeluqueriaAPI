@@ -32,10 +32,9 @@ namespace ApiAdministracionPeluqueria.Controllers
         {
             try
             {
-                var claimId = HttpContext.User.Claims.Where(claim => claim.Type == "id").FirstOrDefault();
-                var idUsuario = claimId.Value;
+                var idUsuario = ExtraerClaim("id");
 
-                var razas = await _razaService.GetAllByIdUser(idUsuario);
+                var razas = await _razaService.GetAllByIdUserAsync(idUsuario);
 
                 return Ok(razas);
             }
@@ -58,11 +57,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             try
             {
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = ExtraerClaim("email");
 
-                var email = claimEmail.Value;
-
-                var nuevaRaza = await _razaService.Create(nuevaRazaDTO, email);
+                var nuevaRaza = await _razaService.CreateAsync(nuevaRazaDTO, email);
 
 
                 return Ok(nuevaRaza);
@@ -94,11 +91,9 @@ namespace ApiAdministracionPeluqueria.Controllers
         {
             try
             {
+                var email = ExtraerClaim("email");
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = claimEmail.Value;
-
-                var razaModificada = await _razaService.Update(id, razaDTO, email);
+                var razaModificada = await _razaService.UpdateAsync(id, razaDTO, email);
 
                 return Ok(razaModificada);
             }
@@ -128,11 +123,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             try
             {
+                var email = ExtraerClaim("email");
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = claimEmail.Value;
-
-                await _razaService.Delete(id, email);
+                await _razaService.DeleteAsync(id, email);
 
                 return NoContent();
 
@@ -156,6 +149,14 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
         #endregion
+
+
+
+        private string ExtraerClaim(string tipoClaim)
+        {
+            var claim = HttpContext.User.Claims.Where(claim => claim.Type == tipoClaim).FirstOrDefault();
+            return claim.Value;
+        }
 
     }
 }

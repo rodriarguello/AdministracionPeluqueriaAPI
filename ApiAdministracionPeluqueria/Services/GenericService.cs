@@ -23,10 +23,10 @@ namespace ApiAdministracionPeluqueria.Services
             _mapper = mapper;
             _userManager = userManager;
         }
-        public abstract Task Delete(int idEntidad, string emailUsuario);
+        public abstract Task DeleteAsync(int idEntidad, string emailUsuario);
 
 
-        public async Task<TEntidadDTO> Create(TCreacionDTO dtoCreacion, string emailUsuario)
+        public async Task<TEntidadDTO> CreateAsync(TCreacionDTO dtoCreacion, string emailUsuario)
         {
             var nuevoRegistro = _mapper.Map<TEntidad>(dtoCreacion);
 
@@ -48,7 +48,7 @@ namespace ApiAdministracionPeluqueria.Services
         }
 
     
-        public async Task<List<TEntidadDTO>> GetAllByIdUser(string idUsuario)
+        public async Task<List<TEntidadDTO>> GetAllByIdUserAsync(string idUsuario)
         {
             var registros = await _context.Set<TEntidad>().Where(alergia => alergia.IdUsuario == idUsuario).ToListAsync();
 
@@ -56,7 +56,7 @@ namespace ApiAdministracionPeluqueria.Services
 
         }
 
-        public async Task<TEntidadDTO> Update(int idEntidad, TCreacionDTO dtoCreacion, string emailUsuario)
+        public async Task<TEntidadDTO> UpdateAsync(int idEntidad, TCreacionDTO dtoCreacion, string emailUsuario)
         {
             var usuario = await _userManager.FindByEmailAsync(emailUsuario);
 

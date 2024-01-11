@@ -1,5 +1,4 @@
 ﻿using ApiAdministracionPeluqueria.Exceptions;
-using ApiAdministracionPeluqueria.Models;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
 using ApiAdministracionPeluqueria.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -36,11 +35,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             try
             {
-                var claimId = HttpContext.User.Claims.Where(claim => claim.Type == "id").FirstOrDefault();
+                var idUsuario = ExtraerClaim("id");
 
-                var idUsuario = claimId.Value;
-
-                var alergias = await _alergiaService.GetAllByIdUser(idUsuario);
+                var alergias = await _alergiaService.GetAllByIdUserAsync(idUsuario);
                 
                 return Ok(alergias);
             }
@@ -64,11 +61,9 @@ namespace ApiAdministracionPeluqueria.Controllers
         {
             try
             {
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = ExtraerClaim("email");
 
-                var email = claimEmail.Value;
-
-                var nuevaAlergia = await _alergiaService.Create(nuevaAlergiaDTO, email);
+                var nuevaAlergia = await _alergiaService.CreateAsync(nuevaAlergiaDTO, email);
                 
 
                 return Ok(nuevaAlergia);
@@ -101,10 +96,9 @@ namespace ApiAdministracionPeluqueria.Controllers
             try
             {
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = claimEmail.Value;
+                var email = ExtraerClaim("email");
 
-                var alergiaModificada = await _alergiaService.Update(id, alergiaCreacionDTO, email);
+                var alergiaModificada = await _alergiaService.UpdateAsync(id, alergiaCreacionDTO, email);
 
                 return Ok(alergiaModificada);
             }
@@ -131,11 +125,9 @@ namespace ApiAdministracionPeluqueria.Controllers
 
             try
             {
+                var email = ExtraerClaim("email");
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = claimEmail.Value;
-
-                await _alergiaService.Delete(id,email);
+                await _alergiaService.DeleteAsync(id,email);
 
                 return NoContent();
             
@@ -158,7 +150,11 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #endregion
 
-
+        private string ExtraerClaim(string tipoClaim)
+        {
+            var claim = HttpContext.User.Claims.Where(claim => claim.Type == tipoClaim).FirstOrDefault();
+            return claim.Value;
+        }
 
 
     }
