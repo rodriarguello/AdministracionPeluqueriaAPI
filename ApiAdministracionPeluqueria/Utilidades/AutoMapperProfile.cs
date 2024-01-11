@@ -21,9 +21,6 @@ namespace ApiAdministracionPeluqueria.Utilidades
             CreateMap<ClienteCreacionDTO, Cliente>();
             CreateMap<Cliente, ClienteDTO>().ReverseMap();
             CreateMap<Cliente, ClienteSinMascotasDTO>().ReverseMap();
-
-            CreateMap<Cliente,ClienteModificarDTO>().ReverseMap();
-
             #endregion
 
 
