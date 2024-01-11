@@ -18,13 +18,19 @@ namespace ApiAdministracionPeluqueria.Services
             _mapper = mapper;
         }
 
-        public async Task<UsuarioDTO> GetByEmailAsync(string email)
+        public async Task<UsuarioDTO> GetDtoByEmailAsync(string email)
         {
             var usuario = await _userManager.FindByEmailAsync(email);
 
             return _mapper.Map<UsuarioDTO>(usuario);
         }
 
+        public async Task<Usuario> GetByIdAsync(string id)
+        {
+            var usuario = await _userManager.FindByIdAsync(id);
+
+            return usuario;
+        }
         public async Task CreateAsync(CreacionUsuarioDTO creacionUsuarioDTO)
         {
             var usuario = _mapper.Map<Usuario>(creacionUsuarioDTO);

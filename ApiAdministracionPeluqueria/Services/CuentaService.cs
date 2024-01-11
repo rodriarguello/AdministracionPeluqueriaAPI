@@ -26,7 +26,7 @@ namespace ApiAdministracionPeluqueria.Services
 
             if (!resultado.Succeeded) throw new BadRequestException();
 
-            var usuario = await _userService.GetByEmailAsync(email);
+            var usuario = await _userService.GetDtoByEmailAsync(email);
 
             var respuesta = new ResAuth
             {

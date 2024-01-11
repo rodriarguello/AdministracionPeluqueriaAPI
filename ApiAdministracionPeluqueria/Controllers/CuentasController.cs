@@ -1,5 +1,4 @@
 ﻿using ApiAdministracionPeluqueria.Exceptions;
-using ApiAdministracionPeluqueria.Models;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.Auth;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.UsuarioDTO;
 using ApiAdministracionPeluqueria.Services.Interfaces;
@@ -74,7 +73,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
-        public async Task<ActionResult<ModeloRespuesta>> GetDatosUsuario()
+        public async Task<ActionResult<UsuarioDTO>> GetDatosUsuario()
         {
             try
             {
@@ -82,7 +81,7 @@ namespace ApiAdministracionPeluqueria.Controllers
 
                 var claimEmailValue = claimEmail.Value;
 
-                var usuario =  await _userService.GetByEmailAsync(claimEmailValue);
+                var usuario =  await _userService.GetDtoByEmailAsync(claimEmailValue);
 
                 if (usuario == null) return Unauthorized();
 
