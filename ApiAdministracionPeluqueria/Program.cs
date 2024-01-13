@@ -123,6 +123,7 @@ builder.Services.AddScoped<ITokenService,TokenService>();
 builder.Services.AddScoped<ICajaService, CajaService>();
 builder.Services.AddScoped<ITurnoService, TurnoService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<ICalendarioService, CalendarioService>();
 
 
 var app = builder.Build();
