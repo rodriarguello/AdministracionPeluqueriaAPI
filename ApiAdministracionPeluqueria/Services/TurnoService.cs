@@ -4,19 +4,17 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ApiAdministracionPeluqueria.Exceptions;
 using ApiAdministracionPeluqueria.Services.Interfaces;
-using Microsoft.AspNetCore.Identity;
-using System;
 using ApiAdministracionPeluqueria.Models.Entidades;
 
 namespace ApiAdministracionPeluqueria.Services
 {
-    public class TurnoService:ITurnoService
+    public class TurnoService : ITurnoService
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ICajaService _cajaService;
 
-        public TurnoService(ApplicationDbContext context, IMapper mapper,ICajaService cajaService)
+        public TurnoService(ApplicationDbContext context, IMapper mapper, ICajaService cajaService)
         {
             _context = context;
             _mapper = mapper;
@@ -40,13 +38,13 @@ namespace ApiAdministracionPeluqueria.Services
         }
 
 
-        public async Task<ResTurnosFiltrados> FiltrarPorFechasAsync(int calendarioId, DateTime fechaInicio, DateTime fechaFin, string idUsuario) 
+        public async Task<ResTurnosFiltrados> FiltrarPorFechasAsync(int calendarioId, DateTime fechaInicio, DateTime fechaFin, string idUsuario)
         {
             var calendario = await _context.Calendarios.Where(calendario => calendario.IdUsuario == idUsuario).
                 FirstOrDefaultAsync(calendario => calendario.Id == calendarioId);
 
             if (calendario == null) throw new BadRequestException("No existe un calendario con el Id especificado para este usuario");
-            
+
             var nuevaFechaInicio = new DateTime(fechaInicio.Year, fechaInicio.Month, fechaInicio.Day, 0, 0, 0);
             var nuevaFechaFin = new DateTime(fechaFin.Year, fechaFin.Month, fechaFin.Day, 23, 59, 59);
 
@@ -220,6 +218,35 @@ namespace ApiAdministracionPeluqueria.Services
             catch (Exception)
             {
                 await transaccion.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task CrearTurnosAsync(List<DateTime> listFechas, List<TimeSpan> listHorarios, Calendario calendario, Usuario usuario)
+        {
+            try
+            {
+                listFechas.ForEach(fecha =>
+                {
+                    listHorarios.ForEach(horario =>
+                    {
+                        Turno nuevoTurno = new Turno(true, false, calendario.Id, usuario.Id);
+
+                        nuevoTurno.Fecha = fecha;
+                        nuevoTurno.Horario = horario;
+                        nuevoTurno.Calendario = calendario;
+                        _context.Turnos.Add(nuevoTurno);
+
+                    });
+
+                });
+
+                await _context.SaveChangesAsync();
+
+            }
+            catch (Exception)
+            {
+
                 throw;
             }
         }

@@ -1,4 +1,5 @@
-﻿using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
+﻿using ApiAdministracionPeluqueria.Models.Entidades;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
 
 namespace ApiAdministracionPeluqueria.Services.Interfaces
 {
@@ -15,5 +16,7 @@ namespace ApiAdministracionPeluqueria.Services.Interfaces
         Task ModificarAsistenciaAsync(int idTurno, string idUsuario, bool asistio);
 
         Task ModificarPrecioAsync(int idTurno, decimal nuevoPrecio, string idUsuario);
+
+        Task CrearTurnosAsync(List<DateTime> listFechas, List<TimeSpan> listHorarios, Calendario calendario, Usuario usuario);
     }
 }
