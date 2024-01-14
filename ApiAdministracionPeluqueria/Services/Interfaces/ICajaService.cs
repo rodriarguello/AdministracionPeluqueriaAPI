@@ -1,4 +1,5 @@
-﻿using ApiAdministracionPeluqueria.Models.EntidadesDTO.IngresoDTO;
+﻿using ApiAdministracionPeluqueria.Models.Entidades;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.IngresoDTO;
 
 namespace ApiAdministracionPeluqueria.Services.Interfaces
 {
@@ -10,7 +11,7 @@ namespace ApiAdministracionPeluqueria.Services.Interfaces
 
         Task<ResIngresos> GetIngresoDiarioAsync(int anio, int mes, int dia, string idUsuario);
 
-        Task CrearIngresoAsync(DateTime fecha, decimal precio, string usuarioId, int idTurno);
+        Task CrearIngresoAsync(DateTime fecha, decimal precio, Usuario usuario, int idTurno);
 
         Task EliminarIngresoAsync(int idTurno, string idUsuario);
 

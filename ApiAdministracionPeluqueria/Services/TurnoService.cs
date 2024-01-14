@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ApiAdministracionPeluqueria.Exceptions;
 using ApiAdministracionPeluqueria.Services.Interfaces;
 using ApiAdministracionPeluqueria.Models.Entidades;
+using Microsoft.AspNetCore.Identity;
 
 namespace ApiAdministracionPeluqueria.Services
 {
@@ -13,12 +14,14 @@ namespace ApiAdministracionPeluqueria.Services
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ICajaService _cajaService;
+        private readonly UserManager<Usuario> _userManager;
 
-        public TurnoService(ApplicationDbContext context, IMapper mapper, ICajaService cajaService)
+        public TurnoService(ApplicationDbContext context, IMapper mapper, ICajaService cajaService, UserManager<Usuario> userManager)
         {
             _context = context;
             _mapper = mapper;
             _cajaService = cajaService;
+            _userManager = userManager;
         }
 
         public async Task<List<TurnoDTO>> GetAllAsync(int idCalendario, string idUsuario)
@@ -144,6 +147,10 @@ namespace ApiAdministracionPeluqueria.Services
             var transaccion = await _context.Database.BeginTransactionAsync();
             try
             {
+                var usuario = await _userManager.FindByIdAsync(idUsuario);
+
+                if (usuario == null) throw new BadRequestException("No existe un usuario con el id especificado");
+
                 var turno = await _context.Turnos.Where(turno => turno.IdUsuario == idUsuario)
                     .Include(turno => turno.Mascota)
                     .FirstOrDefaultAsync(turno => turno.Id == idTurno);
@@ -158,7 +165,7 @@ namespace ApiAdministracionPeluqueria.Services
 
                 if (asistio && (turno.Asistio == null || turno.Asistio == false))
                 {
-                    await _cajaService.CrearIngresoAsync(turno.Fecha, (decimal)turno.Precio, idUsuario, turno.Id);
+                    await _cajaService.CrearIngresoAsync(turno.Fecha, (decimal)turno.Precio, usuario, turno.Id);
                 }
 
                 //Eliminar Ingreso
@@ -190,6 +197,10 @@ namespace ApiAdministracionPeluqueria.Services
             {
 
                 if (nuevoPrecio <= 0) throw new BadRequestException("El precio debe ser mayor a 0");
+
+                var usuario = await _userManager.FindByIdAsync(idUsuario);
+
+                if (usuario == null) throw new BadRequestException("No existe un usuario con el id especificado");
 
                 var turno = await _context.Turnos.Where(turno => turno.IdUsuario == idUsuario)
                     .Include(turno => turno.Mascota)

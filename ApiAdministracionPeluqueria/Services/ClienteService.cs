@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ApiAdministracionPeluqueria.Exceptions;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
+using Microsoft.AspNetCore.Identity;
 
 namespace ApiAdministracionPeluqueria.Services
 {
@@ -13,13 +14,13 @@ namespace ApiAdministracionPeluqueria.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        private readonly IUserService _userService;
+        private readonly UserManager<Usuario> _userManager;
 
-        public ClienteService(ApplicationDbContext context,IMapper mapper, IUserService userService)
+        public ClienteService(ApplicationDbContext context,IMapper mapper, UserManager<Usuario> userManager)
         {
             _context = context;
             _mapper = mapper;
-            _userService = userService;
+            _userManager = userManager;
         }
         public async Task<List<ClienteSinMascotasDTO>> GetAllByIdUserAsync(string idUsuario)
         {
@@ -56,7 +57,7 @@ namespace ApiAdministracionPeluqueria.Services
 
         public  async Task<ClienteSinMascotasDTO> CreateAsync(ClienteCreacionDTO dtoCreacion, string emailUsuario)
         {
-            var usuario = await _userService.GetDtoByEmailAsync(emailUsuario);
+            var usuario = await _userManager.FindByEmailAsync(emailUsuario);
 
             if (usuario == null) throw new BadRequestException("No existe un usuario con el email especificado"); 
 
@@ -74,9 +75,9 @@ namespace ApiAdministracionPeluqueria.Services
         }
 
 
-        public async Task<ClienteSinMascotasDTO> UpdateAsync(int idEntidad, ClienteCreacionDTO dtoCreacion, string email)
+        public async Task<ClienteSinMascotasDTO> UpdateAsync(int idEntidad, ClienteCreacionDTO dtoCreacion, string emailUsuario)
         {
-            var usuario = await _userService.GetDtoByEmailAsync(email);
+            var usuario = await _userManager.FindByEmailAsync(emailUsuario);
 
             if (usuario == null) throw new BadRequestException("No existe un usuario con el email especificado");
 
@@ -95,7 +96,7 @@ namespace ApiAdministracionPeluqueria.Services
         }
         public async Task DeleteAsync(int idEntidad, string emailUsuario)
         {
-            var usuario = await _userService.GetDtoByEmailAsync(emailUsuario);
+            var usuario = await _userManager.FindByEmailAsync(emailUsuario);
 
             if (usuario == null) throw new BadRequestException("No existe un usuario con el email especificado");
 

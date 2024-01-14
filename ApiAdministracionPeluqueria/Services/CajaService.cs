@@ -80,11 +80,9 @@ namespace ApiAdministracionPeluqueria.Services
             return respuesta;
         }
 
-        public async Task CrearIngresoAsync(DateTime fecha, decimal precio, string usuarioId, int idTurno)
+        public async Task CrearIngresoAsync(DateTime fecha, decimal precio, Usuario usuario, int idTurno)
         {
-            var usuario = await _userService.GetByIdAsync(usuarioId);
 
-            if (usuario == null) throw new BadRequestException("No existe un usuario con el id especificado"); 
             var nuevoIngreso = new Ingreso
             {
                 Fecha = fecha,

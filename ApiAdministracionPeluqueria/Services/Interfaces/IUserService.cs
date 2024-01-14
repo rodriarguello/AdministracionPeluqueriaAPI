@@ -1,5 +1,4 @@
-﻿using ApiAdministracionPeluqueria.Models.Entidades;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.UsuarioDTO;
+﻿using ApiAdministracionPeluqueria.Models.EntidadesDTO.UsuarioDTO;
 
 namespace ApiAdministracionPeluqueria.Services.Interfaces
 {
@@ -8,7 +7,5 @@ namespace ApiAdministracionPeluqueria.Services.Interfaces
         Task<UsuarioDTO> GetDtoByEmailAsync (string email);
 
         Task CreateAsync(CreacionUsuarioDTO creacionUsuarioDTO);
-
-        Task<Usuario> GetByIdAsync(string id);
     }
 }

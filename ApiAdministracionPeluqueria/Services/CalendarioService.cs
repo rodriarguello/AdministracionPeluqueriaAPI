@@ -5,29 +5,30 @@ using ApiAdministracionPeluqueria.Models.EntidadesDTO.CalendarioDTO;
 using ApiAdministracionPeluqueria.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 
 namespace ApiAdministracionPeluqueria.Services
 {
     public class CalendarioService:ICalendarioService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IUserService _userService;
+        private readonly UserManager<Usuario> _userManager;
         private readonly ITurnoService _turnoService;
         private readonly IMapper _mapper;
 
-        public CalendarioService(ApplicationDbContext context, IUserService userService, ITurnoService turnoService, IMapper mapper)
+        public CalendarioService(ApplicationDbContext context, UserManager<Usuario> userManager, ITurnoService turnoService, IMapper mapper)
         {
             _context = context;
-            _userService = userService;
+            _userManager = userManager;
             _turnoService = turnoService;
             _mapper = mapper;
         }
 
         public async Task<CalendarioDTO> GetByIdUserAsync(string idUsuario)
         {
-            var usuario = await _userService.GetByIdAsync(idUsuario);
+            var usuario = await _userManager.FindByIdAsync(idUsuario);
 
-            if (usuario == null) throw new NotFoundException();
+            if (usuario == null) throw new BadRequestException("No existe un usuario con el id especificado");
 
             var calendario = await _context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).FirstOrDefaultAsync();
 
@@ -58,7 +59,7 @@ namespace ApiAdministracionPeluqueria.Services
 
                 if (nuevoCalendarioDTO.FechaFin <= nuevoCalendarioDTO.FechaInicio) throw new BadRequestException("La fecha de fin del calendario no puede ser menor o igual a la fecha de fin");
 
-                var usuario = await _userService.GetByIdAsync(idUsuario);
+                var usuario = await _userManager.FindByIdAsync(idUsuario);
 
                 if (usuario == null) throw new BadRequestException("El usuario no existe");
 
@@ -163,7 +164,7 @@ namespace ApiAdministracionPeluqueria.Services
 
         public async Task<CalendarioDTO> UpdateNameAsync(string nuevoNombre, string idUsuario)
         {
-            var usuario = await _userService.GetByIdAsync(idUsuario);
+            var usuario = await _userManager.FindByIdAsync(idUsuario);
 
             if (usuario == null) throw new BadRequestException("No existe un usuario con el id especificado");
 
@@ -184,7 +185,7 @@ namespace ApiAdministracionPeluqueria.Services
             var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var usuario = await _userService.GetByIdAsync(idUsuario);
+                var usuario = await _userManager.FindByIdAsync(idUsuario);
 
                 if (usuario == null) throw new BadRequestException("No existe un usuario con el id especificado");
 
@@ -261,7 +262,7 @@ namespace ApiAdministracionPeluqueria.Services
             var transaccion = await _context.Database.BeginTransactionAsync();
             try
             {
-                var usuario = await _userService.GetByIdAsync(idUsuario);
+                var usuario = await _userManager.FindByIdAsync(idUsuario);
 
                 if (usuario == null) throw new BadRequestException("No existe un usuario con el id especificado");
 
@@ -311,7 +312,7 @@ namespace ApiAdministracionPeluqueria.Services
             var transaccion = await _context.Database.BeginTransactionAsync();
             try
             {
-                var usuario = await _userService.GetByIdAsync(idUsuario);
+                var usuario = await _userManager.FindByIdAsync(idUsuario);
 
                 if (usuario == null) throw new BadRequestException("No existe un usuario con el id especificado");
 
