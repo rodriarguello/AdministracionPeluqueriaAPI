@@ -124,6 +124,7 @@ builder.Services.AddScoped<ICajaService, CajaService>();
 builder.Services.AddScoped<ITurnoService, TurnoService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<ICalendarioService, CalendarioService>();
+builder.Services.AddScoped<IMascotaService, MascotaService>();
 
 
 var app = builder.Build();
