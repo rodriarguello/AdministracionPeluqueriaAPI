@@ -359,16 +359,6 @@ namespace ApiAdministracionPeluqueria.Services
 
                 if (mascota.Turnos.Count > 0) throw new MensajePersonalizadoException("Error al eliminar la mascota porque tiene turnos asociados");
 
-                foreach (var mascotaEnfermedad in mascota.MascotaEnfermedades)
-                {
-                    _context.MascotasEnfermedades.Remove(mascotaEnfermedad);
-                }
-
-                foreach (var mascotaAlergia in mascota.MascotaAlergias)
-                {
-                    _context.MascotasAlergias.Remove(mascotaAlergia);
-                }
-
                 _context.Remove(mascota);
                 await _context.SaveChangesAsync();
 
