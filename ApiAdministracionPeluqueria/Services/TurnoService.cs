@@ -161,6 +161,8 @@ namespace ApiAdministracionPeluqueria.Services
 
                 if (turno.Asistio == asistio) throw new BadRequestException("El turno ya se encuentra con ese estado de asistencia");
 
+                if (asistio && turno.Fecha.Date > DateTime.UtcNow.AddHours(-3).Date) throw new MensajePersonalizadoException("No se puede marcar como que asistió, cuando todavía no ha llegado la fehca del turno.");
+
                 //Agregar Ingreso
 
                 if (asistio && (turno.Asistio == null || turno.Asistio == false))

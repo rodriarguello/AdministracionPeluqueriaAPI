@@ -143,6 +143,10 @@ namespace ApiAdministracionPeluqueria.Controllers
                 return NoContent();
 
             }
+            catch(MensajePersonalizadoException ex)
+            {
+                return StatusCode(499,ex.Message);
+            }
             catch (BadRequestException ex)
             {
                 return BadRequest(ex.Message);
