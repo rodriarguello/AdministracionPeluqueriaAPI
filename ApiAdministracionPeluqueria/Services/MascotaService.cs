@@ -16,12 +16,14 @@ namespace ApiAdministracionPeluqueria.Services
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly UserManager<Usuario> _userManager;
+        private readonly ITurnoService _turnoService;
 
-        public MascotaService(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager)
+        public MascotaService(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager, ITurnoService turnoService)
         {
             _context = context;
             _mapper = mapper;
             _userManager = userManager;
+            _turnoService = turnoService;
         }
         public async Task<List<MascotaDTO>> GetAllByIdUserAsync(string idUsuario)
         {
@@ -328,7 +330,7 @@ namespace ApiAdministracionPeluqueria.Services
                 return _mapper.Map<MascotaDTO>(mascota);
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaccion.RollbackAsync();
                 throw;
@@ -346,18 +348,27 @@ namespace ApiAdministracionPeluqueria.Services
                 if (usuario == null) throw new BadRequestException("No existe un usuario con el email especificado");
 
                 var mascota = await _context.Mascotas.Where(m => m.Id == idEntidad && m.IdUsuario == usuario.Id)
-
-                                                    .Include(mascota => mascota.MascotaEnfermedades)
-
-                                                    .Include(mascota => mascota.MascotaAlergias)
-
                                                     .Include(mascota => mascota.Turnos)
-
                                                     .FirstOrDefaultAsync();
 
                 if (mascota == null) throw new NotFoundException("No existe una mascota con el Id especificado");
 
-                if (mascota.Turnos.Count > 0) throw new MensajePersonalizadoException("Error al eliminar la mascota porque tiene turnos asociados");
+                var turnosPendientes = new List<int>();
+
+                if (mascota.Turnos.Count > 0)
+                {
+                   turnosPendientes = mascota.Turnos.Where(t => (t.Asistio == false || t.Asistio == null) && t.Fecha.Date>=DateTime.UtcNow.AddDays(-3)).Select(m => m.Id).ToList();
+                }
+
+                if (turnosPendientes.Count > 0)
+                {
+                    foreach (var idTurno in turnosPendientes)
+                    {
+                        await _turnoService.CancelarTurnoAsync(idTurno,usuario.Id);
+                    }
+                }
+
+                
 
                 _context.Remove(mascota);
                 await _context.SaveChangesAsync();
