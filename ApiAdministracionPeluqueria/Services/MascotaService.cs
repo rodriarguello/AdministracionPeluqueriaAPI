@@ -6,8 +6,6 @@ using ApiAdministracionPeluqueria.Services.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.ComponentModel;
 
 namespace ApiAdministracionPeluqueria.Services
 {
@@ -48,7 +46,7 @@ namespace ApiAdministracionPeluqueria.Services
                                                  .Include(mascotas => mascotas.MascotaAlergias)
                                                           .ThenInclude(mascotaAlergia => mascotaAlergia.Alergia)
                                                  .Include(mascota => mascota.Turnos)
-                                                 .ToListAsync();
+                                                 .FirstOrDefaultAsync();
 
             if (mascota == null) throw new NotFoundException();
             

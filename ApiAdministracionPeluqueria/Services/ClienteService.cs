@@ -48,6 +48,7 @@ namespace ApiAdministracionPeluqueria.Services
             var turnosCliente = await _context.Clientes.Where(cliente => cliente.Id == idCliente && cliente.IdUsuario == idUsuario)
                 .Include(cliente => cliente.Mascotas!)
                 .ThenInclude(mascotas => mascotas.Turnos)
+                .ThenInclude( turnos => turnos.Mascota)
                 .SelectMany(cliente => cliente.Mascotas!.SelectMany(m => m.Turnos)).ToListAsync();
 
             return _mapper.Map<List<TurnoDTO>>(turnosCliente);
