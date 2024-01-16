@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.Autenticacion
+namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.Auth
 {
     public class CredencialesUsuario
     {
@@ -8,7 +8,7 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.Autenticacion
         [EmailAddress]
         public string Email { get; set; }
         [Required]
-        public string Password { get; set;}
+        public string Password { get; set; }
 
     }
 }

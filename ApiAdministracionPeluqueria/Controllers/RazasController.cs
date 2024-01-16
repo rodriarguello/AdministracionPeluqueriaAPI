@@ -1,14 +1,9 @@
-﻿using ApiAdministracionPeluqueria.Models;
-using ApiAdministracionPeluqueria.Models.Entidades;
+﻿using ApiAdministracionPeluqueria.Exceptions;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.RazaDTO;
-using AutoMapper;
+using ApiAdministracionPeluqueria.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Runtime.CompilerServices;
 
 namespace ApiAdministracionPeluqueria.Controllers
 {
@@ -17,20 +12,14 @@ namespace ApiAdministracionPeluqueria.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class RazasController : ControllerBase
     {
-        private readonly ApplicationDbContext context;
-        private readonly IMapper mapper;
-        private readonly UserManager<Usuario> userManager;
-        private readonly ResponseApi responseApi;
+        private readonly IGenericService<RazaCreacionDTO, RazaDTO> _razaService;
 
         #region Constructor
 
 
-        public RazasController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager, ResponseApi responseApi)
+        public RazasController(IGenericService<RazaCreacionDTO,RazaDTO> razaService)
         {
-            this.context = context;
-            this.mapper = mapper;
-            this.userManager = userManager;
-            this.responseApi = responseApi;
+            _razaService = razaService;
         }
 
         #endregion
@@ -39,28 +28,21 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region MOSTRAR RAZAS
         [HttpGet]
-        public async Task<ActionResult<ModeloRespuesta>> Get()
+        public async Task<ActionResult<List<RazaDTO>>> Get()
         {
             try
             {
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var idUsuario = ExtraerClaim("id");
 
-                var email = claimEmail.Value;
+                var razas = await _razaService.GetAllByIdUserAsync(idUsuario);
 
-                var usuario = await userManager.FindByEmailAsync(email);
-
-                var razas = await context.Razas.Where(raza => raza.IdUsuario == usuario.Id).ToListAsync();
-
-               
-               return responseApi.respuestaExitosa(mapper.Map<List<RazaDTO>>(razas));
-
+                return Ok(razas);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-               return  responseApi.respuestaError(ex.Message);
-               
+                return StatusCode(500, "Error interno del servidor");
             }
-            
+
         }
 
         #endregion
@@ -70,37 +52,32 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<ModeloRespuesta>> PostRaza([FromBody]RazaCreacionDTO nuevaRazaDTO)
+        public async Task<ActionResult<RazaDTO>> PostRaza([FromBody]RazaCreacionDTO nuevaRazaDTO)
         {
 
             try
             {
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = ExtraerClaim("email");
 
-                var email = claimEmail.Value;
-
-                var usuario = await userManager.FindByEmailAsync(email);
-
-                var nuevaRaza = mapper.Map<Raza>(nuevaRazaDTO);
-
-                nuevaRaza.IdUsuario = usuario.Id;
+                var nuevaRaza = await _razaService.CreateAsync(nuevaRazaDTO, email);
 
 
-                context.Add(nuevaRaza);
-
-                await context.SaveChangesAsync();
-
-               
-                return responseApi.respuestaExitosa(mapper.Map<RazaDTO>(nuevaRaza));
-
-
+                return Ok(nuevaRaza);
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
-                return responseApi.respuestaError(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (MensajePersonalizadoException ex)
+            {
+                return StatusCode(499, ex.Message);
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500, "Error interno del servidor");
 
             }
-
 
         }
 
@@ -109,37 +86,25 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
         #region MODIFICAR RAZA
-        [HttpPut]
-        public async Task<ActionResult<ModeloRespuesta>> PutRaza([FromBody] RazaDTO razaDTO)
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<RazaDTO>> PutRaza([FromBody] RazaCreacionDTO razaDTO, [FromRoute] int id)
         {
-
             try
             {
+                var email = ExtraerClaim("email");
 
+                var razaModificada = await _razaService.UpdateAsync(id, razaDTO, email);
 
-                bool existe = await context.Razas.AnyAsync(raza => raza.Id == razaDTO.Id);
-
-                if (!existe) return responseApi.respuestaError("No existe una raza con el Id especificado");
-                 
-
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = claimEmail.Value;
-                var usuario = await userManager.FindByEmailAsync(email);
-
-                var raza = mapper.Map<Raza>(razaDTO);
-                raza.IdUsuario = usuario.Id;
-
-
-
-                context.Update(raza);
-                await context.SaveChangesAsync();
-
-                return responseApi.respuestaExitosa();
-
+                return Ok(razaModificada);
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
-                return responseApi.respuestaError(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500, "Error interno del servidor");
 
             }
 
@@ -152,36 +117,30 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region ELIMINAR RAZA
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> DeleteRaza([FromRoute]int id)
+        public async Task<ActionResult> DeleteRaza([FromRoute]int id)
         {
 
 
             try
             {
+                var email = ExtraerClaim("email");
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = claimEmail.Value;
-                var usuario = await userManager.FindByEmailAsync(email);
+                await _razaService.DeleteAsync(id, email);
 
+                return NoContent();
 
-
-                var raza = await context.Razas.Where(raza=>raza.IdUsuario == usuario.Id)
-                                               .Include(raza=>raza.Mascotas)
-                                               .FirstOrDefaultAsync(raza => raza.Id == id);
-                
-                if (raza == null) return responseApi.respuestaError("No existe una raza con el Id especificado");
-
-                if (raza.Mascotas.Count() > 0) return responseApi.respuestaErrorEliminacion("No se puede eliminar la raza porque tiene mascotas asociadas");
-
-                context.Razas.Remove(raza);
-
-                await context.SaveChangesAsync();
-
-                return responseApi.respuestaExitosa();
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
-                return responseApi.respuestaError(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (MensajePersonalizadoException ex)
+            {
+                return StatusCode(499, ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
 
             }
 
@@ -190,6 +149,14 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
         #endregion
+
+
+
+        private string ExtraerClaim(string tipoClaim)
+        {
+            var claim = HttpContext.User.Claims.Where(claim => claim.Type == tipoClaim).FirstOrDefault();
+            return claim.Value;
+        }
 
     }
 }

@@ -29,7 +29,7 @@ namespace ApiAdministracionPeluqueria.Models
 
         public DbSet<MascotaAlergia> MascotasAlergias { get; set; }
 
-        public DbSet<Caja> Caja { get; set; }
+        public DbSet<Ingreso> Ingresos { get; set; }
 
 
 
