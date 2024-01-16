@@ -15,7 +15,7 @@ namespace ApiAdministracionPeluqueria.Models.Entidades
         [MaxLength(50)]
         public string NombrePeluqueria { get; set;}
         [Required]
-        public DateTime FechaCreacion { get; set;}
+        public DateTime FechaCreacion { get; set;} = DateTime.UtcNow.AddHours(-3);
 
     }
 }

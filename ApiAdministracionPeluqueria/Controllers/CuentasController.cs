@@ -1,18 +1,10 @@
-﻿using ApiAdministracionPeluqueria.Models;
-using ApiAdministracionPeluqueria.Models.Entidades;
-using ApiAdministracionPeluqueria.Models.EntidadesDTO.Autenticacion;
+﻿using ApiAdministracionPeluqueria.Exceptions;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.Auth;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.UsuarioDTO;
-using AutoMapper;
+using ApiAdministracionPeluqueria.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.ComponentModel;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace ApiAdministracionPeluqueria.Controllers
 {
@@ -20,22 +12,13 @@ namespace ApiAdministracionPeluqueria.Controllers
     [ApiController]
     public class CuentasController : ControllerBase
     {
-        private readonly ApplicationDbContext context;
-        private readonly UserManager<Usuario> userManager;
-        private readonly IConfiguration configuration;
-        private readonly SignInManager<Usuario> signInManager;
-        private readonly ResponseApi response;
-        private readonly IMapper mapper;
+        private readonly ICuentaService _cuentaService;
+        private readonly IUserService _userService;
 
-        public CuentasController(ApplicationDbContext context, UserManager<Usuario> userManager, 
-            IConfiguration configuration, SignInManager<Usuario> signInManager, ResponseApi response, IMapper mapper)
+        public CuentasController(ICuentaService cuentaService, IUserService userService)
         {
-            this.context = context;
-            this.userManager = userManager;
-            this.configuration = configuration;
-            this.signInManager = signInManager;
-            this.response = response;
-            this.mapper = mapper;
+            _cuentaService = cuentaService;
+            _userService = userService;
         }
 
 
@@ -43,24 +26,22 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         [HttpPost("registrar")]
         
-        public async Task<ActionResult<RespuestaAutenticacion>> RegistroUsuario(CreacionUsuarioDTO creacionUsuarioDTO)
+        public async Task<ActionResult> Registro(CreacionUsuarioDTO creacionUsuarioDTO)
         {
-            var usuario = new Usuario { UserName = creacionUsuarioDTO.Email,
-                                        Email = creacionUsuarioDTO.Email,
-                                        Nombres = creacionUsuarioDTO.Nombres,
-                                        Apellido = creacionUsuarioDTO.Apellido,
-                                        NombrePeluqueria = creacionUsuarioDTO.NombrePeluqueria,
-                                        FechaCreacion = DateTime.Now
-                                      };
+            try
+            {
+                await _cuentaService.RegisterAsync(creacionUsuarioDTO);
 
-            var resultado = await userManager.CreateAsync(usuario, creacionUsuarioDTO.Password);
-
-            if (resultado.Succeeded) return ConstruirToken(usuario.Email);
-            
-
-            else return BadRequest(resultado.Errors);
-
-
+                return NoContent();
+            }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
         #endregion
@@ -68,27 +49,23 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region LOGIN
         [HttpPost("login")]
-        public async Task<ActionResult<ModeloRespuesta>> Login(CredencialesUsuario credencialesUsuario)
+        public async Task<ActionResult<ResAuth>> Login(CredencialesUsuario credencialesUsuario)
         {
-            var resultado = await signInManager.PasswordSignInAsync(credencialesUsuario.Email, credencialesUsuario.Password,
-
-            isPersistent: false, lockoutOnFailure: false);
-
-            var respuesta = new
+            try
             {
-                credenciales = ConstruirToken(credencialesUsuario.Email),
-                usuario =  mapper.Map<UsuarioDTO>( await userManager.FindByEmailAsync(credencialesUsuario.Email))
-            };
+                var respuesta = await _cuentaService.LoginAsync(credencialesUsuario.Email, credencialesUsuario.Password);
 
-
-            if (resultado.Succeeded) return response.respuestaExitosa(respuesta);       
-        
-            else return BadRequest("Login Incorrecto");
-        
+                return Ok(respuesta);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest("Credenciales inválidas");
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
-
-
-
 
 
         #endregion
@@ -96,50 +73,27 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
-        public async Task<ActionResult<ModeloRespuesta>> MostrarDatosUsuario()
-        {   
-
-            var claimEmail = HttpContext.User.Claims.Where(claim=>claim.Type == "email").FirstOrDefault();
-
-            var claimEmailValue = claimEmail.Value;
-
-            var usuario =  await userManager.FindByEmailAsync(claimEmailValue);
-
-            if (usuario == null) return Unauthorized();
-
-            return response.respuestaExitosa(mapper.Map<UsuarioDTO>(usuario));
-
-
-    
-        }
-        #region CONSTRUIR TOKEN
-
-        private RespuestaAutenticacion ConstruirToken(string email)
+        public async Task<ActionResult<UsuarioDTO>> GetDatosUsuario()
         {
-            var claims = new List<Claim>()
+            try
             {
-                new Claim ("email", email)
-            };
+                var claimEmail = HttpContext.User.Claims.Where(claim=>claim.Type == "email").FirstOrDefault();
 
+                var claimEmailValue = claimEmail.Value;
 
-            var llave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["llaveJwt"]));
+                var usuario =  await _userService.GetDtoByEmailAsync(claimEmailValue);
 
-            var creds = new SigningCredentials(llave, SecurityAlgorithms.HmacSha256);
+                if (usuario == null) return Unauthorized();
 
-            var expiracion = DateTime.UtcNow.AddDays(1);
+                return Ok(usuario);
 
-            var token = new JwtSecurityToken(issuer:null, audience:null,claims:claims,expires:expiracion, signingCredentials:creds);
-
-            return new RespuestaAutenticacion() 
-            { Token = new JwtSecurityTokenHandler().WriteToken(token), 
-            Expiracion= expiracion};
-
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
 
         }
-
-        #endregion
-
-
 
     }
 }

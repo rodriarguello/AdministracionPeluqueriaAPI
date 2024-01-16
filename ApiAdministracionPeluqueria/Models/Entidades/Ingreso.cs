@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ApiAdministracionPeluqueria.Models.Entidades
 {
-    public class Caja
+    public class Ingreso
     {
         [Required]
         public int Id { get; set; }

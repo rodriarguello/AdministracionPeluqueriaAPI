@@ -1,12 +1,9 @@
-﻿using ApiAdministracionPeluqueria.Models;
-using ApiAdministracionPeluqueria.Models.Entidades;
+﻿using ApiAdministracionPeluqueria.Exceptions;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
-using AutoMapper;
+using ApiAdministracionPeluqueria.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace ApiAdministracionPeluqueria.Controllers
@@ -16,18 +13,12 @@ namespace ApiAdministracionPeluqueria.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class TurnosController : ControllerBase
     {
-        private readonly ApplicationDbContext context;
-        private readonly IMapper mapper;
-        private readonly UserManager<Usuario> userManager;
-        private readonly ResponseApi responseApi;
+        private readonly ITurnoService _turnoService;
 
         #region Constructor
-        public TurnosController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager, ResponseApi responseApi)
+        public TurnosController(ITurnoService turnoService)
         {
-            this.context = context;
-            this.mapper = mapper;
-            this.userManager = userManager;
-            this.responseApi = responseApi;
+            _turnoService = turnoService;
         }
 
 
@@ -39,41 +30,23 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         [HttpGet("{calendarioId:int}")]
 
-        public async Task<ActionResult<ModeloRespuesta>> Get(int calendarioId)
+        public async Task<ActionResult<List<TurnoDTO>>> GetAll(int calendarioId)
         {
             try
             {
-                var existeCalendario = await context.Calendarios.AnyAsync(calendario => calendario.Id == calendarioId);
+                var idUsuario = ExtraerClaim("id");
 
-                if (!existeCalendario) return responseApi.respuestaError("No existe un calendario con el Id especificado");
-            
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var turnos = await _turnoService.GetAllAsync(calendarioId, idUsuario);
 
-                var email = claimEmail.Value;
-
-                var usuario = await userManager.FindByEmailAsync(email);
-
-                var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).
-                    FirstOrDefaultAsync(calendario=>calendario.Id == calendarioId);
-
-                if (calendario==null) return responseApi.respuestaError("No existe un calendario con el Id especificado para este usuario");
-
-                var turnos = await context.Turnos.Where(turnos => turnos.IdCalendario == calendarioId)
-                    .Include(turnos=> turnos.Fecha)
-                    .Include(turnos=>turnos.Horario)
-                    .Include(turnos=>turnos.Mascota)
-                    .ToListAsync();
-
-                 
-
-
-                return responseApi.respuestaExitosa(mapper.Map<List<TurnoDTO>>(turnos));
-
-
+                return Ok(turnos);
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
-                return responseApi.respuestaError(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
             }
 
         }
@@ -81,172 +54,53 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         [HttpGet("filtrar/{calendarioId:int},{fechaInicio},{fechaFin}")]
 
-        public async Task<ActionResult<ModeloRespuesta>> FiltrarPorFechas([FromRoute] int calendarioId, DateTime fechaInicio,DateTime fechaFin)
+        public async Task<ActionResult<ResTurnosFiltrados>> FiltrarPorFechas([FromRoute] int calendarioId, DateTime fechaInicio,DateTime fechaFin)
         {
             try
             {
-                
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-                var email = claimEmail.Value;
+                var idUsuario = ExtraerClaim("id");
 
-                var usuario = await userManager.FindByEmailAsync(email);
+                var turnos = await _turnoService.FiltrarPorFechasAsync(calendarioId, fechaInicio, fechaFin, idUsuario);
 
-                var nuevaFechaInicio = new DateTime(fechaInicio.Year,fechaInicio.Month,fechaInicio.Day,0,0,0);
-                var nuevaFechaFin = new DateTime(fechaFin.Year, fechaFin.Month, fechaFin.Day, 23, 59, 59);
+                return Ok(turnos);
 
-                var calendario = await context.Calendarios.Where(calendario => calendario.IdUsuario == usuario.Id).
-                    FirstOrDefaultAsync(calendario => calendario.Id == calendarioId);
-
-                if (calendario == null) return responseApi.respuestaError("No existe un calendario con el Id especificado para este usuario");
-
-                var turnos = await context.Turnos.Where(turnos => turnos.IdCalendario == calendarioId)
-                    .Include(turnos => turnos.Mascota)
-                    .Where(turnos=> turnos.Fecha.Date>=nuevaFechaInicio.Date && turnos.Fecha.Date <=nuevaFechaFin.Date)
-                    .ToListAsync();
-
-
-               
-
-
-                var listLunes = mapper.Map<List<TurnoDTO>>(turnos.Where(turno=>turno.Fecha.DayOfWeek == DayOfWeek.Monday).ToList());
-
-                var listMartes = mapper.Map<List<TurnoDTO>>(turnos.Where(turno=>turno.Fecha.DayOfWeek == DayOfWeek.Tuesday).ToList());
-
-                var listMiercoles = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Wednesday).ToList());
-
-                var listJueves = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Thursday).ToList());
-
-                var listViernes = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Friday).ToList());
-
-                var listSabado = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Saturday).ToList());
-
-                var listDomingo = mapper.Map<List<TurnoDTO>>(turnos.Where(turno => turno.Fecha.DayOfWeek == DayOfWeek.Sunday).ToList());
-
-
-
-
-                return responseApi.respuestaExitosa(new
-                {
-                    lunes= listLunes,
-                    martes = listMartes,
-                    miercoles = listMiercoles,
-                    jueves = listJueves, 
-                    viernes = listViernes, 
-                    sabado = listSabado,
-                    domingo = listDomingo,
-                    cantidadHorarios = calendario.CantidadHorarios
-                });
-
-
+            }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                return responseApi.respuestaError(ex.Message);
+                return StatusCode(500, "Error interno del servidor");
             }
 
         }
 
         #endregion
 
-        [HttpGet("cliente/{idCliente:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> MostrarTurnosCliente(int idCliente)
-        {
-            try
-            {
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-
-                var email = claimEmail.Value;
-
-                var usuario = await userManager.FindByEmailAsync(email);
-
-
-                var mascotasCliente = await context.Clientes
-                    .Where(cliente => cliente.Id == idCliente)
-                    .Include(cliente => cliente.Mascotas)
-                    .FirstOrDefaultAsync(cliente=>cliente.IdUsuario==usuario.Id);
-
-                if (mascotasCliente == null) return responseApi.respuestaError("No existe un cliente con el id especificado");
-                
-                var listaIdsMascotas = new List<int?>();
-
-                if(mascotasCliente.Mascotas.Count() <1) return responseApi.respuestaExitosa(listaIdsMascotas);
-
-
-                mascotasCliente.Mascotas.ForEach(mascota=> listaIdsMascotas.Add(mascota.Id));
-
-                var turnos = await context.Turnos.Where(turno=>turno.IdUsuario==usuario.Id).Where(turno=>listaIdsMascotas.Contains(turno.IdMascota))
-                     .Include(turno=>turno.Mascota)
-                     .ToListAsync();
-
-
-               
-                
-                
-                return responseApi.respuestaExitosa(mapper.Map<List<TurnoDTO>>(turnos));
-
-
-            }
-            catch (Exception ex)
-            {
-                return responseApi.respuestaError(ex.Message);
-            }
-
-
-
-        }
-
-
         #region MODIFICAR TURNO
 
 
         [HttpPut("reservar/{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> ReservarTurno([FromRoute] int id , [FromBody] TurnoModificarDTO turnoDTO)
+        public async Task<ActionResult> ReservarTurno([FromRoute] int id , [FromBody] TurnoModificarDTO turnoDTO)
         {
             try
             {
-                
-               
-            
-                var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = emailClaim.Value;
-                var usuario = await userManager.FindByEmailAsync(email);
+                var idUsuario = ExtraerClaim("id");
 
+                await _turnoService.ReservarTurnoAsync(id, turnoDTO, idUsuario);
 
+                return NoContent();
 
-                var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    .Include(turno=>turno.Mascota)
-                    .FirstOrDefaultAsync(turno => turno.Id == id);
-
-                if (turno == null) return responseApi.respuestaError("No existe el turno con el Id especificado");
-
-                if (!turno.Disponible) return responseApi.respuestaError("El turno no esta disponible");
-
-                var mascota = await context.Mascotas.Where(mascota => mascota.IdUsuario == usuario.Id)
-                    .FirstOrDefaultAsync(mascota => mascota.Id == turnoDTO.IdMascota);
-
-                if(mascota == null) return responseApi.respuestaError("No existe una mascota con el Id especificado");
-
-                if (turnoDTO.Precio <= 0) return responseApi.respuestaError("El precio debe ser mayor a 0");
-
-
-
-                turno.Disponible = false;
-                turno.IdMascota = turnoDTO.IdMascota;
-                turno.Mascota = mascota;
-                turno.Asistio = false;
-                turno.Precio = turnoDTO.Precio;
-                
-                
-                await context.SaveChangesAsync();
-
-
-                return responseApi.respuestaExitosa();
             }
-            catch (Exception ex)
+            catch(BadRequestException ex)
             {
-                return responseApi.respuestaError(ex.Message);
-                
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
             }
         }
 
@@ -254,184 +108,87 @@ namespace ApiAdministracionPeluqueria.Controllers
 
 
         [HttpPut("cancelar/{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> CancelarReserva([FromRoute]int id)
+        public async Task<ActionResult> CancelarReserva([FromRoute]int id)
         {
 
             try
             {
+                var idUsuario = ExtraerClaim("id");
 
-                var emailClaim = HttpContext.User.Claims.Where(claim=>claim.Type=="email").FirstOrDefault();
-                var email = emailClaim.Value;
-                var usuario = await userManager.FindByEmailAsync(email);
+                await _turnoService.CancelarTurnoAsync(id, idUsuario);
 
-
-                var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    .Include(turno=>turno.Mascota)
-                    .FirstOrDefaultAsync(turno=>turno.Id == id);
-
-                if (turno == null) return responseApi.respuestaError("No existe un turno con el Id especificado");
-
-                if (turno.Disponible) return responseApi.respuestaError("El turno NO estaba reservado");
-
-                if (turno.Asistio == true) return responseApi.respuestaError("El turno no se puede cancelar, porque esta marcado como que la mascota asistió");
-
-                turno.Disponible = true;
-                turno.Asistio = null;
-                turno.Precio = null;
-                turno.IdMascota = null;
-                turno.Mascota = null;
-
-
-                
-                await context.SaveChangesAsync();
-
-
-                return responseApi.respuestaExitosa();
+                return NoContent();
 
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
-
-                return responseApi.respuestaError(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
             }
         }
 
 
         [HttpPut("asistencia/{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> ModificarAsistencia([FromRoute] int id, [FromBody] bool asistio)
+        public async Task<ActionResult> ModificarAsistencia([FromRoute] int id, [FromBody] bool asistio)
         {
-            var transaccion = await context.Database.BeginTransactionAsync();
             try
             {
-                var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = emailClaim.Value;
-                var usuario = await userManager.FindByEmailAsync(email);
+                var idUsuario = ExtraerClaim("id");
 
+                await _turnoService.ModificarAsistenciaAsync(id, idUsuario, asistio);
 
-                var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    .Include(turno=>turno.Mascota)
-                    .FirstOrDefaultAsync(turno => turno.Id == id);
-
-                if (turno == null) return responseApi.respuestaError("No existe un turno con el Id especificado");
-
-                if (turno.Disponible) return responseApi.respuestaError("El turno esta disponible, por lo cual no se le puede modificar la asistencia");
-
-                if (turno.Asistio == asistio) return responseApi.respuestaError("El turno ya se encuentra con ese estado de asistencia");
-
-                //Agregar Ingreso
-
-                if (turno.Asistio == null && asistio || turno.Asistio == false && asistio)
-                {
-                    Caja nuevoIngreso = new Caja
-                    {
-                        Fecha = turno.Fecha,
-                        Precio = (decimal)turno.Precio!,
-                        IdUsuario = usuario.Id,
-                        Usuario = usuario,
-                        IdTurno = turno.Id
-
-                    };
-
-                    context.Caja.Add(nuevoIngreso);
-
-
-                }
-
-                //Eliminar Ingreso
-                if (turno.Asistio == true && asistio == false)
-                {
-                    var registroCaja = await context.Caja.Where(caja => caja.IdUsuario == usuario.Id).FirstOrDefaultAsync(caja => caja.IdTurno == turno.Id);
-
-                    if (registroCaja != null)
-                    {
-                        context.Caja.Remove(registroCaja);
-                    }
-                }
-
-
-                turno.Asistio = asistio;
-
-                
-                await context.SaveChangesAsync();
-
-                await transaccion.CommitAsync();
-
-                
-                return responseApi.respuestaExitosa();
+                return NoContent();
 
             }
-            catch (Exception ex)
-            {   
-                await transaccion.RollbackAsync();
-                return responseApi.respuestaError(ex.Message);
+            catch(MensajePersonalizadoException ex)
+            {
+                return StatusCode(499,ex.Message);
             }
-
-
+            catch (BadRequestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
 
         }
 
         [HttpPut("precio/{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> ModificarPrecio([FromRoute] int id, [FromBody] int nuevoPrecio)
+        public async Task<ActionResult> ModificarPrecio([FromRoute] int id, [FromBody] int nuevoPrecio)
         {
-            var transaccion = await context.Database.BeginTransactionAsync();
-
             try
             {
+                var idUsuario = ExtraerClaim("id");
 
-                if (nuevoPrecio <= 0) return responseApi.respuestaError("El precio debe ser mayor a 0");
+                await _turnoService.ModificarPrecioAsync(id, nuevoPrecio, idUsuario);
 
-
-                var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = emailClaim.Value;
-                var usuario = await userManager.FindByEmailAsync(email);
-
-
-                var turno = await context.Turnos.Where(turno => turno.IdUsuario == usuario.Id)
-                    .Include(turno=>turno.Mascota)
-                    .FirstOrDefaultAsync(turno => turno.Id == id);
-
-                if (turno == null) return responseApi.respuestaError("No existe un turno con el Id especificado");
-
-
-                if (turno.Disponible) return responseApi.respuestaError("El turno esta disponible, por lo cual no se le puede modificar el precio");
-
-
-
-                //Modifica precio en la entidad caja
-                if (turno.Asistio == true)
-                {
-                    var registroCaja = await context.Caja.Where(registro => registro.IdUsuario == usuario.Id).FirstOrDefaultAsync(registro => registro.IdTurno == turno.Id);
-
-                    if (registroCaja != null)
-                    {
-                        registroCaja.Precio = nuevoPrecio;
-                    }
-                }
-
-                turno.Precio = nuevoPrecio;
-           
-
-                
-                await context.SaveChangesAsync();
-
-                await transaccion.CommitAsync();
-
-                return responseApi.respuestaExitosa();
-
+                return NoContent();
 
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
-                await transaccion.RollbackAsync();
-                return responseApi.respuestaError(ex.Message);
+                return BadRequest(ex.Message);
             }
-
-
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
         #endregion
 
-   
+        private string ExtraerClaim(string tipoClaim)
+        {
+            var claim = HttpContext.User.Claims.Where(claim => claim.Type == tipoClaim).FirstOrDefault();
+            
+            return claim.Value;
+        }
+
 
 
     }

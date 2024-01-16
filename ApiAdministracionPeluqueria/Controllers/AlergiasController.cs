@@ -1,12 +1,9 @@
-﻿using ApiAdministracionPeluqueria.Models;
-using ApiAdministracionPeluqueria.Models.Entidades;
+﻿using ApiAdministracionPeluqueria.Exceptions;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
-using AutoMapper;
+using ApiAdministracionPeluqueria.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace ApiAdministracionPeluqueria.Controllers
@@ -16,20 +13,14 @@ namespace ApiAdministracionPeluqueria.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class AlergiasController : ControllerBase
     {
-        private readonly ApplicationDbContext context;
-        private readonly IMapper mapper;
-        private readonly UserManager<Usuario> userManager;
-        private readonly ResponseApi responseApi;
+        private readonly IGenericService<AlergiaCreacionDTO, AlergiaDTO> _alergiaService;
 
 
 
         #region Constructor
-        public AlergiasController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager, ResponseApi responseApi)
+        public AlergiasController(IGenericService<AlergiaCreacionDTO,AlergiaDTO> alergiaService)
         {
-            this.context = context;
-            this.mapper = mapper;
-            this.userManager = userManager;
-            this.responseApi = responseApi;
+            _alergiaService = alergiaService;
         }
 
         #endregion
@@ -39,28 +30,20 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MOSTRAR ALERGIAS
 
         [HttpGet]
-        public async Task<ActionResult<ModeloRespuesta>> Get()
+        public async Task<ActionResult<List<AlergiaDTO>>> Get()
         {
 
             try
             {
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var idUsuario = ExtraerClaim("id");
 
-                var email = claimEmail.Value;
-
-                var usuario = await userManager.FindByEmailAsync(email);
-
-
-                var alergias = await context.Alergias.Where(alergia => alergia.IdUsuario == usuario.Id).ToListAsync();
-
-
-                return responseApi.respuestaExitosa(mapper.Map<List<AlergiaDTO>>(alergias));
-
-
+                var alergias = await _alergiaService.GetAllByIdUserAsync(idUsuario);
+                
+                return Ok(alergias);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return responseApi.respuestaError(ex.Message);
+                return StatusCode(500, "Error interno del servidor");
             }
             
 
@@ -74,37 +57,31 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region INSERTAR ALERGIA
 
         [HttpPost]
-        public async Task<ActionResult<ModeloRespuesta>> Post([FromBody]AlergiaCreacionDTO nuevaAlergiaDTO)
+        public async Task<ActionResult<AlergiaDTO>> Post([FromBody]AlergiaCreacionDTO nuevaAlergiaDTO)
         {
-
-
-
             try
             {
+                var email = ExtraerClaim("email");
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var nuevaAlergia = await _alergiaService.CreateAsync(nuevaAlergiaDTO, email);
+                
 
-                var email = claimEmail.Value;
-
-                var usuario = await userManager.FindByEmailAsync(email);
-
-                var nuevaAlergia = mapper.Map<Alergia>(nuevaAlergiaDTO);
-
-                nuevaAlergia.IdUsuario = usuario.Id;
-
-                context.Alergias.Add(nuevaAlergia);
-
-                await context.SaveChangesAsync();
-
-                return responseApi.respuestaExitosa(mapper.Map<AlergiaDTO>(nuevaAlergia));
+                return Ok(nuevaAlergia);
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (MensajePersonalizadoException ex)
+            {
+                return StatusCode(499, ex.Message);
+            }
+            catch (Exception)
             {
 
-                return responseApi.respuestaError(ex.Message);
+                return StatusCode(500,"Error interno del servidor");
  
             }
-
         }
 
         #endregion
@@ -113,36 +90,26 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region MODIFICAR ALERGIA
 
-        [HttpPut]
-        public async Task<ActionResult<ModeloRespuesta>> Put([FromBody] AlergiaDTO alergiaDTO)
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<AlergiaDTO>> Put([FromBody] AlergiaCreacionDTO alergiaCreacionDTO, [FromRoute] int id)
         {
             try
             {
-                bool existe = await context.Alergias.AnyAsync(alergia => alergia.Id == alergiaDTO.Id);
 
+                var email = ExtraerClaim("email");
 
-                if (!existe) return responseApi.respuestaError("No existe una alergia con el Id especificado");
+                var alergiaModificada = await _alergiaService.UpdateAsync(id, alergiaCreacionDTO, email);
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = claimEmail.Value;
-                var usuario = await userManager.FindByEmailAsync(email);
-
-
-
-                var alergia = mapper.Map<Alergia>(alergiaDTO);
-                alergia.IdUsuario = usuario.Id;
-
-
-
-                context.Alergias.Update(alergia);
-                await context.SaveChangesAsync();
-
-                return responseApi.respuestaExitosa();
+                return Ok(alergiaModificada);
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
-                
-                return responseApi.respuestaError(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500, "Error interno del servidor");
 
             }
         }
@@ -153,36 +120,29 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region ELIMINAR ALERGIA
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> Delete([FromRoute]int id)
+        public async Task<ActionResult> Delete([FromRoute]int id)
         {
 
             try
             {
+                var email = ExtraerClaim("email");
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-                var email = claimEmail.Value;
-                var usuario = await userManager.FindByEmailAsync(email);
-                
-                var alergia = await context.Alergias.Where(alergia=>alergia.IdUsuario == usuario.Id)
-                                                    .Include(alergia=> alergia.MascotasAlergia)
-                                                    .FirstOrDefaultAsync(alergia => alergia.Id == id);
+                await _alergiaService.DeleteAsync(id,email);
 
-                if (alergia == null) return responseApi.respuestaError("No existe una alergia con el Id especificado");
-
-
-                if (alergia.MascotasAlergia.Count() > 0) return responseApi.respuestaErrorEliminacion("No se puede eliminar la alergia porque tiene registros asociados");
-
-
-                context.Alergias.Remove(alergia);
-
-                await context.SaveChangesAsync();
-
-                return responseApi.respuestaExitosa();
+                return NoContent();
             
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
-               return responseApi.respuestaError(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch(MensajePersonalizadoException ex)
+            {
+                return StatusCode(499, ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
 
             }
 
@@ -190,7 +150,11 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #endregion
 
-
+        private string ExtraerClaim(string tipoClaim)
+        {
+            var claim = HttpContext.User.Claims.Where(claim => claim.Type == tipoClaim).FirstOrDefault();
+            return claim.Value;
+        }
 
 
     }

@@ -1,12 +1,10 @@
-﻿using ApiAdministracionPeluqueria.Models;
-using ApiAdministracionPeluqueria.Models.Entidades;
+﻿using ApiAdministracionPeluqueria.Exceptions;
 using ApiAdministracionPeluqueria.Models.EntidadesDTO.ClienteDTO;
-using AutoMapper;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.TurnoDTO;
+using ApiAdministracionPeluqueria.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ApiAdministracionPeluqueria.Controllers
 {
@@ -15,19 +13,13 @@ namespace ApiAdministracionPeluqueria.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ClientesController : ControllerBase
     {
-        private readonly ApplicationDbContext context;
-        private readonly IMapper mapper;
-        private readonly UserManager<Usuario> userManager;
-        private readonly ResponseApi responseApi;
+        private readonly IClienteService _clienteService;
 
 
         #region Constructor
-        public ClientesController(ApplicationDbContext context, IMapper mapper, UserManager<Usuario> userManager, ResponseApi responseApi)
+        public ClientesController(IClienteService clienteService)
         {
-            this.context = context;
-            this.mapper = mapper;
-            this.userManager = userManager;
-            this.responseApi = responseApi;
+            _clienteService = clienteService;
         }
         #endregion
 
@@ -36,57 +28,67 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region MOSTRAR CLIENTES
 
         [HttpGet]
-        public async Task<ActionResult<ModeloRespuesta>> Get()
+        public async Task<ActionResult<List<ClienteSinMascotasDTO>>> GetAll()
         {
             try
             {
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var idUsuario = ExtraerClaim("id");
 
-                var email = claimEmail.Value;
+                var clientes = await _clienteService.GetAllByIdUserAsync(idUsuario);
 
-                var usuario = await userManager.FindByEmailAsync(email);
-
-                var clientes = await context.Clientes.Include(cliente=>cliente.Mascotas).Where(cliente => cliente.IdUsuario == usuario.Id).ToListAsync();
-
-
-                return responseApi.respuestaExitosa(mapper.Map<List<ClienteDTO>>(clientes));
+                return Ok(clientes);
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-               return  responseApi.respuestaError(ex.Message);
-                
+                return StatusCode(500, "Error interno del servidor");
             }
 
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> GetPorId([FromRoute]int id)
+        public async Task<ActionResult<ClienteDTO>> GetPorId([FromRoute]int id)
+        {
+                try
+                {
+                    var idUsuario = ExtraerClaim("id");
+
+                    var clientes = await _clienteService.GetByIdAsync(id, idUsuario);
+
+                    return Ok(clientes);
+
+                }
+                catch (NotFoundException)
+                {
+                    return NotFound();
+                }
+                catch (Exception)
+                {
+                    return StatusCode(500, "Error interno del servidor");
+                }
+        }
+
+        [HttpGet("turnos/{idCliente:int}")]
+        public async Task<ActionResult<List<TurnoDTO>>> GetTurnosTomados([FromRoute] int idCliente)
         {
             try
             {
+                var idUsuario = ExtraerClaim("id");
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var turnos = await _clienteService.GetTurnosTomadosAsync(idCliente, idUsuario);
 
-                var email = claimEmail.Value;
-
-                var usuario = await userManager.FindByEmailAsync(email);
-
-                var cliente = await context.Clientes.Include(cliente=>cliente.Mascotas).Where(cliente=>cliente.IdUsuario == usuario.Id).FirstOrDefaultAsync(x=> x.Id == id);
-
-                if (cliente == null) return  responseApi.respuestaError("No existe un cliente con el id especificado");
-                 
-
-
-               return responseApi.respuestaExitosa(mapper.Map<ClienteDTO>(cliente));
-
+                return Ok(turnos);
 
             }
-            catch (Exception ex)
+            catch (NotFoundException)
             {
-
-              return responseApi.respuestaError(ex.Message);
+                return NotFound();
             }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
+
 
         }
 
@@ -98,35 +100,26 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region INSERTAR CLIENTE
 
         [HttpPost]
-        public async Task<ActionResult<ModeloRespuesta>> Post([FromBody]ClienteCreacionDTO nuevoClienteDTO)
+        public async Task<ActionResult<ClienteSinMascotasDTO>> Post([FromBody]ClienteCreacionDTO nuevoClienteDTO)
         {
 
             try
             {
 
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = ExtraerClaim("email");
 
-                var email = claimEmail.Value;
+                var cliente = await _clienteService.CreateAsync(nuevoClienteDTO, email);
 
-                var usuario = await userManager.FindByEmailAsync(email);
-
-                var nuevoCliente = mapper.Map<Cliente>(nuevoClienteDTO);
-
-                nuevoCliente.IdUsuario = usuario.Id;
-
-                nuevoCliente.FechaCreacion = DateTime.Now;
-
-                context.Add(nuevoCliente);
-
-
-                await context.SaveChangesAsync();
-
-                return responseApi.respuestaExitosa(mapper.Map<ClienteSinMascotasDTO>(nuevoCliente));
-            }
-            catch (Exception ex)
-            {
-                return responseApi.respuestaError(ex.Message);
+                return Ok(cliente);
                 
+            }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
             }
 
         }
@@ -137,42 +130,30 @@ namespace ApiAdministracionPeluqueria.Controllers
 
         #region MODIFICAR CLIENTES
 
-        [HttpPut]
-        public async Task<ActionResult<ModeloRespuesta>> Put([FromBody]ClienteModificarDTO clienteDTO)
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<ClienteSinMascotasDTO>> Put([FromRoute]int id, [FromBody]ClienteCreacionDTO clienteDTO)
         {
             try
             {
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
 
-                var email = claimEmail.Value;
+                var email = ExtraerClaim("email");
 
-                var usuario = await userManager.FindByEmailAsync(email);
+                var cliente = await _clienteService.UpdateAsync(id, clienteDTO, email);
 
-                var cliente = await context.Clientes.Where(cliente => cliente.IdUsuario == usuario.Id)
-                                .FirstOrDefaultAsync(cliente => cliente.Id == clienteDTO.Id);
-
-
-
-                
-
-                if (cliente == null) return responseApi.respuestaError("No existe un cliente con Id especificado");
-
-               
-
-                cliente.Nombre = clienteDTO.Nombre;
-                cliente.Email = clienteDTO.Email;
-                cliente.Telefono = clienteDTO.Telefono;
-                
-                
-                await context.SaveChangesAsync();
-
-                return responseApi.respuestaExitosa();
+                return Ok(cliente);
 
             }
-            catch (Exception ex)
+            catch(NotFoundException)
             {
-
-              return  responseApi.respuestaError(ex.Message);
+                return NotFound();
+            }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
             }
 
         }
@@ -184,37 +165,44 @@ namespace ApiAdministracionPeluqueria.Controllers
         #region ELIMINAR CLIENTE
 
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> Delete([FromRoute] int id)
+        public async Task<ActionResult> Delete([FromRoute] int id)
         {
             try
             {
-                var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+                var email = ExtraerClaim("email");
 
-                var email = claimEmail.Value;
+                await _clienteService.DeleteAsync(id, email);
 
-                var usuario = await userManager.FindByEmailAsync(email);
+                return NoContent();
 
-                var cliente = await context.Clientes.Where(cliente=>cliente.IdUsuario == usuario.Id)
-                                                    .Include(cliente=> cliente.Mascotas)
-                                                    .FirstOrDefaultAsync(cliente => cliente.Id == id);
-
-                if (cliente==null) return responseApi.respuestaError("No existe un cliente con el Id especificado");
-
-                if (cliente.Mascotas.Count() > 0) return responseApi.respuestaErrorEliminacion("No se puede eliminar el cliente porque tiene mascotas asociadas");
-
-                context.Remove(cliente);
-                await context.SaveChangesAsync();
-
-                return responseApi.respuestaExitosa();
             }
-            catch (Exception ex)
+            catch (NotFoundException)
             {
-              return responseApi.respuestaError(ex.Message);
+                return NotFound();
+            }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(MensajePersonalizadoException ex)
+            {
+                return StatusCode(499, ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
             }
 
         }
 
         #endregion
+
+        private string ExtraerClaim(string tipoClaim)
+        {
+            var claim = HttpContext.User.Claims.Where(claim => claim.Type == tipoClaim).FirstOrDefault();
+
+            return claim.Value;
+        }
 
 
     }

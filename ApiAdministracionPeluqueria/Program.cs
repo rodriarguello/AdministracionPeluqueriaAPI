@@ -9,7 +9,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.Extensions.Options;
+using ApiAdministracionPeluqueria.Services.Interfaces;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.AlergiaDTO;
+using ApiAdministracionPeluqueria.Services;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.EnfermedadDTO;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.RazaDTO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -105,21 +109,29 @@ builder.Services.AddCors(opciones=> {
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 
-builder.Services.AddIdentity<Usuario, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+builder.Services.AddIdentity<Usuario, IdentityRole>( options=> options.Password.RequireNonAlphanumeric = false).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
 builder.Services.AddTransient<ResponseApi>();
 
 builder.Services.AddScoped<DbInicializador>();
+builder.Services.AddScoped<IGenericService<AlergiaCreacionDTO,AlergiaDTO>,AlergiaService>();
+builder.Services.AddScoped<IGenericService<EnfermedadCreacionDTO,EnfermedadDTO>, EnfermedadService>();
+builder.Services.AddScoped<IGenericService<RazaCreacionDTO,RazaDTO>,RazaService>();
+builder.Services.AddScoped<ICuentaService,CuentaService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService,TokenService>();
+builder.Services.AddScoped<ICajaService, CajaService>();
+builder.Services.AddScoped<ITurnoService, TurnoService>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<ICalendarioService, CalendarioService>();
+builder.Services.AddScoped<IMascotaService, MascotaService>();
 
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseSwagger();
 app.UseSwaggerUI();

@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ApiAdministracionPeluqueria.Models.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace ApiAdministracionPeluqueria.Models.Entidades
 {
-    public class Enfermedad
+    public class Enfermedad:IIdUsuario
     {
         [Required]
         [Key]

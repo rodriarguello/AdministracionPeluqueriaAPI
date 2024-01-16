@@ -1,12 +1,9 @@
-﻿using ApiAdministracionPeluqueria.Models;
-using ApiAdministracionPeluqueria.Models.Entidades;
+﻿using ApiAdministracionPeluqueria.Exceptions;
+using ApiAdministracionPeluqueria.Models.EntidadesDTO.IngresoDTO;
+using ApiAdministracionPeluqueria.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Xml.Schema;
 
 namespace ApiAdministracionPeluqueria.Controllers
 {
@@ -15,91 +12,89 @@ namespace ApiAdministracionPeluqueria.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CajaController : ControllerBase
     {
-        private readonly ApplicationDbContext context;
-        private readonly UserManager<Usuario> userManager;
-        private readonly ResponseApi response;
+        private readonly ICajaService _cajaService;
 
-        public CajaController(ApplicationDbContext context, UserManager<Usuario> userManager, ResponseApi response)
+        public CajaController(ICajaService cajaService)
         {
-            this.context = context;
-            this.userManager = userManager;
-            this.response = response;
+            _cajaService = cajaService;
         }
 
         [HttpGet("{anio:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> MostrarIngresosPorAnio(int anio)
+        public async Task<ActionResult<ResIngresos>> GetIngresoAnual(int anio)
         {
-
-            if (anio > DateTime.Now.Year) return response.respuestaError("No se puede enviar un año mayor al actual"); 
-
-            var usuario = await ObtenerUsuario();
-
-            
-            var ingresos = await context.Caja.Where(ingreso=> ingreso.IdUsuario == usuario.Id)
-                                             .Where(ingreso=>ingreso.Fecha.Year== anio)
-                                             .ToListAsync();
-            var totalIngresos = ingresos.Sum(ingreso=>ingreso.Precio);
-
-            
-
-            return response.respuestaExitosa(new
+            try
             {
-                cantidadIngresos = ingresos.Count(),
-                total = totalIngresos
+                var idUsuario = ExtraerIdClaim();
 
-            });
+                var ingresos = await _cajaService.GetIngresoAnualAsync(anio, idUsuario);
+
+                return Ok(ingresos);
+
+            }
+            catch(BadRequestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
+
         }
 
         [HttpGet("{anio:int}/{mes:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> MostrarIngresosPorMes(int anio, int mes)
+        public async Task<ActionResult<ResIngresos>> GetIngresoMensual(int anio, int mes)
         {
 
-            if (anio > DateTime.Now.Year) return response.respuestaError("No se puede enviar un año mayor al actual");
-            
-            var usuario = await ObtenerUsuario();
+            try
+            {
+                var idUsuario = ExtraerIdClaim();
 
-            var ingresos = await context.Caja.Where(ingreso=>ingreso.IdUsuario == usuario.Id)
-                                             .Where(ingreso => ingreso.Fecha.Year == anio && ingreso.Fecha.Month == mes)
-                                             .ToListAsync();
+                var ingresos = await _cajaService.GetIngresoMensualAsync(mes, anio, idUsuario);
 
-            var totalIngresos = ingresos.Sum(ingreso=>ingreso.Precio);
+                return Ok(ingresos);
 
-            return response.respuestaExitosa(new {cantidadIngresos = ingresos.Count(), total = totalIngresos});
+            }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
 
         [HttpGet("{anio:int}/{mes:int}/{dia:int}")]
-        public async Task<ActionResult<ModeloRespuesta>> MostrarIngresosPorDia(int anio, int mes, int dia)
+        public async Task<ActionResult<ResIngresos>> GetIngresoDiario(int anio, int mes, int dia)
         {
+            try
+            {
+                var idUsuario = ExtraerIdClaim();
 
+                var ingresos = await _cajaService.GetIngresoDiarioAsync(anio, mes, dia, idUsuario);
 
-            if (anio > DateTime.Now.Year) return response.respuestaError("No se puede enviar un año mayor al actual");
+                return Ok(ingresos);
 
-            var usuario = await ObtenerUsuario();
+            }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
 
-            var fecha = new DateTime(anio,mes,dia);
+        }
 
-            var ingresos = await context.Caja.Where(ingreso=>ingreso.IdUsuario == usuario.Id).Where(ingreso=>ingreso.Fecha.Date == fecha.Date).ToListAsync();
-
-            var totalIngresos = ingresos.Sum(ingreso=> ingreso.Precio);
-
-
-
-            return response.respuestaExitosa(new {cantidadIngresos = ingresos.Count(), total = totalIngresos});
+        private string ExtraerIdClaim()
+        {
+            var claimId = HttpContext.User.Claims.Where(claim => claim.Type == "id").FirstOrDefault();
+            
+            return claimId.Value;
         }
         
-        private async Task<Usuario> ObtenerUsuario()
-        {
-            var claimEmail = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
-
-            var claimValue = claimEmail.Value;
-
-            var usuario = await userManager.FindByEmailAsync(claimValue);
-
-            if (usuario == null) return null;
-
-            return usuario;
-        }
-
     }
 }
