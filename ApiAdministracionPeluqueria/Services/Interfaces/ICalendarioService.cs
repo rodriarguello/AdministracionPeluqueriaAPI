@@ -10,7 +10,7 @@ namespace ApiAdministracionPeluqueria.Services.Interfaces
 
         Task<CalendarioDTO> UpdateNameAsync(string nuevoNombre, string idUsuario);
 
-        Task<CalendarioDTO> ExtendAsync(DateTime nuevaFechaFin, string idUsuario);
+        Task<CalendarioDTO> ExtendAsync(ExtenderCalendarioDTO extenderCalendarioDTO, string idUsuario);
 
         Task<CalendarioDTO> ReduceAsync(DateTime nuevaFechaFin, string idUsuario);
 

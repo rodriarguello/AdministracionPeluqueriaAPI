@@ -98,14 +98,14 @@ namespace ApiAdministracionPeluqueria.Controllers
         }
 
 
-        [HttpPost("agregarturnos/{nuevaFechaFin}")]
-        public async Task<ActionResult<CalendarioDTO>> AgregarTurnos([FromRoute]DateTime nuevaFechaFin)
+        [HttpPut("agregarturnos")]
+        public async Task<ActionResult<CalendarioDTO>> AgregarTurnos([FromBody]ExtenderCalendarioDTO extenderCalendarioDTO)
         {
             try
             {
                 var idUsuario = ExtraerClaim("id");
 
-                var calendario = await _calendarioService.ExtendAsync(nuevaFechaFin, idUsuario);
+                var calendario = await _calendarioService.ExtendAsync(extenderCalendarioDTO, idUsuario);
 
                 return Ok(calendario);
             }
