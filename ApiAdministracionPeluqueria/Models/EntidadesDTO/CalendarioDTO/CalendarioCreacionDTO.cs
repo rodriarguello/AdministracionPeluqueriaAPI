@@ -23,6 +23,8 @@ namespace ApiAdministracionPeluqueria.Models.EntidadesDTO.CalendarioDTO
         [Required]
         public int IntervaloTurnos { get; set; }
 
+        public bool ExcluirDomingo { get; set; } = true;
+
        
 
     }

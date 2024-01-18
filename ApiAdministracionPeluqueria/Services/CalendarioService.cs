@@ -45,6 +45,8 @@ namespace ApiAdministracionPeluqueria.Services
             try
             {
 
+                
+
 
                 #region VALIDACIONES
 
@@ -110,12 +112,30 @@ namespace ApiAdministracionPeluqueria.Services
 
                 var listFechas = new List<DateTime>();
 
-                while (fechaCargar <= nuevoCalendario.FechaFin)
+                if (nuevoCalendarioDTO.ExcluirDomingo)
                 {
-                    listFechas.Add(fechaCargar);
+                    while (fechaCargar <= nuevoCalendario.FechaFin)
+                    {
+                        if (fechaCargar.Date.DayOfWeek == DayOfWeek.Sunday) {
+                            fechaCargar = fechaCargar.AddDays(1);
+                            continue;
+                        }
+                        listFechas.Add(fechaCargar);
 
-                    fechaCargar = fechaCargar.AddDays(1);
+                        fechaCargar = fechaCargar.AddDays(1);
+                    }
+
                 }
+                else
+                {
+                    while (fechaCargar <= nuevoCalendario.FechaFin)
+                    {
+                        listFechas.Add(fechaCargar);
+
+                        fechaCargar = fechaCargar.AddDays(1);
+                    }
+                }
+
 
                 #endregion
 
@@ -180,7 +200,7 @@ namespace ApiAdministracionPeluqueria.Services
         }
 
 
-        public async Task<CalendarioDTO> ExtendAsync(DateTime nuevaFechaFin, string idUsuario)
+        public async Task<CalendarioDTO> ExtendAsync(ExtenderCalendarioDTO extenderCalendarioDTO, string idUsuario)
         {
             var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -193,7 +213,7 @@ namespace ApiAdministracionPeluqueria.Services
 
                 if (calendario == null) throw new BadRequestException("El usuario no posee un calendario");
 
-                if (calendario.FechaFin.Date > nuevaFechaFin.Date) throw new BadRequestException("La fecha enviada es anterior a la fecha actual de finalización");
+                if (calendario.FechaFin.Date > extenderCalendarioDTO.FechaFin.Date) throw new BadRequestException("La fecha enviada es anterior a la fecha actual de finalización");
 
 
                 #region CARGAR DIAS
@@ -202,12 +222,33 @@ namespace ApiAdministracionPeluqueria.Services
 
                 var listFechas = new List<DateTime>();
 
-                while (fechaCargar.Date <= nuevaFechaFin.Date)
+                if (extenderCalendarioDTO.ExcluirDomingo)
                 {
-                    listFechas.Add(fechaCargar);
+                    while (fechaCargar.Date <= extenderCalendarioDTO.FechaFin.Date)
+                    {
 
-                    fechaCargar = fechaCargar.AddDays(1);
+                        if(fechaCargar.DayOfWeek == DayOfWeek.Sunday)
+                        {
+                            fechaCargar = fechaCargar.AddDays(1);
+                            continue;
+                        }
+
+                        listFechas.Add(fechaCargar);
+
+                        fechaCargar = fechaCargar.AddDays(1);
+                    }
                 }
+                else
+                {
+
+                    while (fechaCargar.Date <= extenderCalendarioDTO.FechaFin.Date)
+                    {
+                        listFechas.Add(fechaCargar);
+
+                        fechaCargar = fechaCargar.AddDays(1);
+                    }
+                }
+
 
                 #endregion
 
@@ -239,7 +280,7 @@ namespace ApiAdministracionPeluqueria.Services
                 await _turnoService.CrearTurnosAsync(listFechas, listHorarios, calendario, usuario);
 
 
-                calendario.FechaFin = nuevaFechaFin;
+                calendario.FechaFin = extenderCalendarioDTO.FechaFin;
 
                 await _context.SaveChangesAsync();
 
